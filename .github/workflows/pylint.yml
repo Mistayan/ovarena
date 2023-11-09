@@ -20,5 +20,5 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint, ignore j2l
       run: |
-        pylint $(git ls-files '*.py') --ignore=j2l --disable=R,C
+        pylint $(git ls-files '*.py') --ignore-path=j2l 
         
