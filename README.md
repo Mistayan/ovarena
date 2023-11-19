@@ -137,3 +137,6 @@ https://tutos.jusdeliens.com/index.php/2023/04/27/pytactx-creez-vos-propres-regl
 
 jouer à la manette (non disponnible dans ce projet) :
 https://tutos.jusdeliens.com/index.php/2020/05/10/piloter-votre-agent-pytactx-avec-une-manette-en-html/
+
+Autres jeux développés par les apprenants de JusDeLiens : 
+https://github.com/azemazer/bomberguys
