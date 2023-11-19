@@ -120,6 +120,9 @@ Attention à vérifier la compatibilité de votre licence avec celles des module
 Voir l'aèrne : 
 https://play.jusdeliens.com/tactx/
 
+Récupérer la dernière version de pytactx, pour développer vos propres jeux :
+https://replit.com/@jusdeliens/pytactxv2
+
 Voir l'avancement du projet :
 https://jusdeliens.com/epsirennesopeninno2324
 
