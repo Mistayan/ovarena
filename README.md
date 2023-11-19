@@ -113,3 +113,27 @@ MIT
 ...
 S'appuyer sur https://choosealicense.com/ ou la doc de github
 Attention à vérifier la compatibilité de votre licence avec celles des modules utilisés
+
+
+## Liens utiles :
+
+Voir l'aèrne : 
+https://play.jusdeliens.com/tactx/
+
+Voir l'avancement du projet :
+https://jusdeliens.com/epsirennesopeninno2324
+
+découvrir jusdeliens :
+https://jusdeliens.com/bienvenue/
+
+comment se connecter à OVA ?
+https://tutos.jusdeliens.com/index.php/2023/01/17/onboarding/
+
+comprendre comment utiliser l'interface graphique en ligne (pytactx, arène virtuelle):
+https://tutos.jusdeliens.com/index.php/2020/01/14/pytactx-prise-en-main/
+
+comprendre comment arbitrer une partie : 
+https://tutos.jusdeliens.com/index.php/2023/04/27/pytactx-creez-vos-propres-regles-du-jeu/
+
+jouer à la manette (non disponnible dans ce projet) :
+https://tutos.jusdeliens.com/index.php/2020/05/10/piloter-votre-agent-pytactx-avec-une-manette-en-html/
