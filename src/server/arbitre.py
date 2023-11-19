@@ -70,7 +70,7 @@ for k, v in arbitre.jeu.items():
 	print(k, " : ", v)
 
 
-# source : https://tutos.jusdeliens.com/index.php/2023/04/27/pytactx-creez-vos-propres-regles-du-jeu/
+# source : https://tutos.jusdeliens.com/index.php/2023/04/27/pytactx-creez-vos-propres-regles-du-jeu
 arbitre.changerArene("info", "⌛ Initialisation de l'arbitre...")
 while ( len(arbitre.jeu) == 0 ):
 	arbitre.orienter((arbitre.orientation+1)%4)
@@ -84,7 +84,7 @@ agentsScores = {
 }
 arbitre.changerArene("info", "⌛ Création des agents...")
 for agentId in agentsScores.keys() :
-	arbitre.changerJoueur(agentId, "life", 100)
+    arbitre.changerJoueur(agentId, "life", 100)
 
 # Affichage dans l'arène du début de la partie par l'arbitre
 # arbitre.changerArene("info", "🟢 C'est parti !")
