@@ -1,6 +1,7 @@
-import j2l.pytactx.agent as pytactx
+import os
 from time import sleep
 
+from j2l.pytactx.agent import AgentFr as Gestionnaire
 
 """
 Débutant en ptyhon ?
@@ -10,10 +11,10 @@ https://tutos.jusdeliens.com/index.php/2020/01/14/pytactx-prise-en-main/
 
 
 """
-arbitre = pytactx.AgentFr(nom=input("👾 id: "),
-						arene=input("🎲 arena: "),
+arbitre = Gestionnaire(nom=os.environ['ARBITRE_NAME'] or input("👾 id: "),
+						arene=os.environ['ARENA_NAME'] or input("🎲 arena: "),
 						username="demo",
-						password=input("🔑 password: "),
+						password=os.environ['ARENA_PLAYER_PASS'] or input("🔑 password: "),
 						url="mqtt.jusdeliens.com",
 						verbosite=2)
 
@@ -86,9 +87,11 @@ for agentId in agentsScores.keys() :
 	arbitre.changerJoueur(agentId, "life", 100)
 
 # Affichage dans l'arène du début de la partie par l'arbitre
-arbitre.changerArene("info", "🟢 C'est parti !")
+# arbitre.changerArene("info", "🟢 C'est parti !")
+arbitre.changerArene("info", "🔴 Arène en cours de construction ")
 
-# Boucle principale pour actualiser l'arbitre 
+# Boucle principale pour actualiser l'arbitre
+tableauScores = []
 while True:
 	# Changement d'orientation de l'arbitre pour montrer qu'il est actif dans l'arène
 	arbitre.orienter((arbitre.orientation+1)%4)
@@ -98,4 +101,4 @@ while True:
 	...
 
 	# Affichage du score des 2 bots en temps réel
-	arbitre.changerArene("info", tableauScore)
+	arbitre.changerArene("info", tableauScores)

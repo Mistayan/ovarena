@@ -1,0 +1,7 @@
+requests
+paho-mqtt
+pillow
+idna
+charset-normalizer
+certifi
+urllib3
