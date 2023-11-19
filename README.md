@@ -43,7 +43,14 @@ Un joueur peut :
  - perdre des points à chaque mouvement sur une case 'lente'
  - gagner des points pour chaque seconde **en déplacement** où il n'y a pas eu de colisions
  - gagner une grande quantité de points en trouvant la **__Batterie__**
-   
+ - continuer d'explorer jusqu'à ce que le temps soit écoulé, ou que son score atteint 0
+
+L'arbitre peut :
+ 	- voir toute la map
+	- changer les scores des joueurs pour appliquer les règles
+ 	- tuer un joueur si son score est de 0
+  	- faire gagner des avantages à des joueurs pour leurs découvertes dans le labyrinthe
+
  
 ## Pré-requis
 - pour utiliser le projet:
