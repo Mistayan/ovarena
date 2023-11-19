@@ -1,7 +1,7 @@
 import os
 from time import sleep
 
-from j2l.pytactx.agent import AgentFr as Gestionnaire
+from src.api.j2l.pytactx.agent import AgentFr as Gestionnaire
 
 """
 Débutant en ptyhon ?
