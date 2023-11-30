@@ -19,39 +19,59 @@ Description courte du projet
 ...
 
 ## Règles du jeu 
+- [ ] Maximum 5 robot dans l'arène réelle
+- [ ] Maximum 1 robots par 10x5 sur une arène virtuelle
+- [ ] Quand un joueur entre en colision avec un mur, le joueur perd 0,5 points
+- [ ] Quand un joueur avance sur une case autre que du sol (#floor), le joueur perd 0,2 point
+- [ ] Toutes les 1 secondes sur une case autre que le sol, le joueur perd 0,1 point
+- [ ] Si un joueur avance depuis plus de 3 secondes sans incidents, gagne 0,1 point par seconde.
+- [ ] Si un joueur trouve la **__Batterie__**, il gagne **30 points**.
+- [ ] Un match dure __3 minutes 20 secondes__.
+
 ##### Maquette
 
 
 ##### Déroulé d'une partie:
 	- Les joueurs arrivent à un emplacement aléatoire, défini sur les bords de la grille.
 	- Chaque joueur possède un temps de préparation, afin d'apprendre à son robot à naviguer dans un labyrinthe sombre, exigüe, et rempli de de mésaventures
-    - Lors de la 'compétition', chaque joueur aura TROIS essais pour trouver la sortie le plus rapidement possible. Ils apparaitront toujours aux mêmes emplacements.
-    - L'objectif de chacun est d'entrainer un algorithme capable de se souvenir des chemins déjà empruntés par son robot, et de déterminer si un chemin est plus rapide à prendre qu'un autre pour gagner un maximum de points.
+    - Lors de la 'compétition', chaque joueur aura TROIS essais pour trouver la **__Batterie__** et accumuler le maximum de points
+    - L'objectif de chacun est d'entrainer un algorithme capable de se souvenir des chemins déjà empruntés par son robot, et de déterminer si un chemin est plus rapide à prendre qu'un autre pour trouver la batterie avant tout le monde, et accumuler un maximum de points.
 
 
-##### conditions de victoire :
-	- ...
+## conditions de victoire :
+   Le maximum de points théorique est de : 89.1
+   Sur 3 matchs distincts (total 10 minutes de compétition), l'objectif est d'accumuler un maximum de points 
+Il est possible d'être éliminé (les points ne sont pas perdus), si un joueur est touché 3 fois par Minova
 
 ## Use cases
 
-Un joueur peut : 
- - voir ce que son robot voit
- - avancer son robot
- - pivoter son robot
- - avoir accès à une boussole, lui permettant de connaitre son orientation dans le labyrinthe
- - perdre des points en cas de colision avec un mur
- - perdre des points à chaque mouvement sur une case 'lente'
- - gagner des points pour chaque seconde **en déplacement** où il n'y a pas eu de colisions
- - gagner une grande quantité de points en trouvant la **__Batterie__**
- - continuer d'explorer jusqu'à ce que le temps soit écoulé, ou que son score atteint 0
+Un joueur peut :
+ - [ ] Utiliser OVA avec IRobot dans un labyrinthe réel, ou l'agent virtuel avec pytactx
+ - [ ] voir ce que son robot voit
+ - [ ] mémoriser la carte de la manière de son choix
+ - [ ] avancer son robot
+ - [ ] pivoter son robot
+ - [ ] avoir accès à une boussole, lui permettant de connaitre son orientation dans le labyrinthe
+ - [ ] perdre des points en cas de colision avec un mur
+ - [ ] perdre des points à chaque mouvement sur une case 'lente'
+ - [ ] gagner des points pour chaque seconde **en déplacement** où il n'y a pas eu de colisions (actif au bout de 3 seconde)
+ - [ ] gagner une grande quantité de points en trouvant la **__Batterie__**
+ - [ ] continuer d'explorer jusqu'à ce que le temps soit écoulé, ou qu'il soit éliminé 
+
 
 L'arbitre peut :
- 	- voir toute la map
-	- changer les scores des joueurs pour appliquer les règles
- 	- tuer un joueur si son score est de 0
-  	- faire gagner des avantages à des joueurs pour leurs découvertes dans le labyrinthe
+- [ ] définir les règles du jeu
+- [ ] faire apparaître les joueurs à des emplacements défini par lui-même.
+- [ ] changer la map entre chaque partie ?
+- [ ] voir toute la map
+- [ ] ajouter ce que le joueur voit du labyrinthe à sa map personnelle
+- [ ] changer les scores des joueurs pour appliquer les règles
+- [ ] tuer un joueur
+- [ ] faire gagner des points et avantages à des joueurs pour leurs découvertes dans le labyrinthe
+- [ ] infliger des pénalités aux joueurs, si ils tapent un mur ou se déplacent sur une case 'lente'
 
- 
+
+
 ## Pré-requis
 - pour utiliser le projet:
 Python >= 3.10
@@ -110,9 +130,6 @@ JusDeLiens : Julien Arne @jusdeliens.com : fondateur
 ##  License
 MIT 
 
-...
-S'appuyer sur https://choosealicense.com/ ou la doc de github
-Attention à vérifier la compatibilité de votre licence avec celles des modules utilisés
 
 
 ## Liens utiles :
