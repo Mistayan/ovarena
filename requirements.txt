@@ -5,3 +5,4 @@ idna
 charset-normalizer
 certifi
 urllib3
+sqlalchemy
