@@ -128,7 +128,9 @@ ThimoteeL : Thimotee Lerailler @EPSI I1
 JusDeLiens : Julien Arne @jusdeliens.com : fondateur
 
 ##  License
-MIT 
+Les produits de jusdeliens sont sous license CC BY-NC-ND 3.0
+
+Le code produit est sous license Open Source (MIT)
 
 
 
