@@ -71,27 +71,23 @@ print("📸 Test camera")
 robot.enableCamera(True)
 for i in range(50):
     robot.update()
-    sr = 0
-    sg = 0
-    sb = 0
-    n = 0
-    w = robot.getImageWidth()
-    h = robot.getImageHeight()
+    red, green, blue , n = 0, 0, 0, 0
+    w, h = robot.getImageWidth(), robot.getImageHeight()
     for x in range(0, w, 10):
         for y in range(0, h, 10):
             color = robot.getImagePixelRGB(x, y)
-            sr += color[0]
-            sg += color[1]
-            sb += color[2]
+            red += color[0]
+            green += color[1]
+            blue += color[2]
             n += 1
     if n > 0:
-        sr = sr // n
-        sg = sg // n
-        sb = sb // n
+        red = red // n
+        green = green // n
+        blue = blue // n
         print("📸 Camera img " + str(w) + "x" + str(h) + " shot after " +
               str(robot.getImageTimestamp()) + "ms")
-        print("🔴<R>=" + str(sr) + " 🟢<G>=" + str(sg) + " 🔵<B>=" + str(sb))
-        robot.setLedColor(sr, sg, sb)
+        print("🔴<R>=" + str(red) + " 🟢<G>=" + str(green) + " 🔵<B>=" + str(blue))
+        robot.setLedColor(red, green, blue)
     time.sleep(0.1)
 robot.enableCamera(False)
 
