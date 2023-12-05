@@ -4,25 +4,30 @@ import time
 import j2l.pyrobotx.client as ova
 from j2l.pyrobotx.robot import IRobot, RobotEvent
 
+"""
+Ce ficier python est utilisé pour instancier une connexion au __robot OVA__ **ou** un __Agent virtuel__
+le robot peut être contrôllé via les différentes méthodes de l'API exposées
+"""
+
 # Pour piloter une ova via un broker MQTT
 robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
                                   port=1883,
-                                  useProxy=False)
+                                  useProxy=False)  # Agent Virtuel
 
 
 # Pour piloter une ova sur un LAN ou si vous êtes directement connecté à son point d'accès
-# robot:IRobot = OvaClientHttpV2(url="192.168.x.x") 
+# robot:IRobot = OvaClientHttpV2(url="192.168.x.x")  # Robot OVA
 
 
-# Appel de la callback onRobotEvent pour chaque évènements du robot
-def onRobotEvent(source, event, value):
+# Appel de la callback on_event pour chaque évènements du robot
+def on_event(source, event, value):
     print("Rx event", event, "from", source, ":", value)
 
 
-robot.addEventListener(RobotEvent.imageReceived, onRobotEvent)
-robot.addEventListener(RobotEvent.robotChanged, onRobotEvent)
-robot.addEventListener(RobotEvent.robotConnected, onRobotEvent)
-robot.addEventListener(RobotEvent.robotDisconnected, onRobotEvent)
+robot.addEventListener(RobotEvent.imageReceived, on_event)
+robot.addEventListener(RobotEvent.robotChanged, on_event)
+robot.addEventListener(RobotEvent.robotConnected, on_event)
+robot.addEventListener(RobotEvent.robotDisconnected, on_event)
 
 print("########################")
 while not robot.isConnectedToRobot():
