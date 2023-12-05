@@ -32,7 +32,7 @@ class Direction(Enum):
             raise ValueError("une Orientation est définie par un entier 'angle' compris entre 0 et 360 (°)")
         orientation = Direction.NORTH
         if angle <= 30 :
-            # do nothing, orientation is already North
+            orientation = Direction.NORTH
         elif angle <= 60 :
             orientation = Direction.NORTHNORTHEAST
         elif angle <= 90 :
