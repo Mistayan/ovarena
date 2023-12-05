@@ -1,0 +1,11 @@
+requests
+paho-mqtt
+pillow
+idna
+charset-normalizer
+certifi
+urllib3
+sqlalchemy
+pylint
+unittest
+python-dotenv
