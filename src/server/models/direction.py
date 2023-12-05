@@ -53,6 +53,6 @@ class Direction(Enum):
             orientation = Direction.SOUTWEST
         elif angle <= 330 :
             orientation = Direction.NORTHWEST
-        elif angle > 330 && angle < 360 :
+        elif angle > 330 and angle < 360 :
             orientation = Direction.NORTHNORTHWEST
         return orientation
