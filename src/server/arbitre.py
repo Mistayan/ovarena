@@ -60,7 +60,10 @@ arbitre.changerArene("mapImgs" , [
 	"", # goal
 	"", # monitor
 ])
+## ayant actualisé les règles, on redémarre le serveur en mode "pause", afin que les joueurs puissent se connecter
 arbitre.changerArene("reset", True)
+#arbitre.changerArene("pause", True)
+
 # send rules to server
 arbitre.actualiser()
 
@@ -84,7 +87,7 @@ agentsScores = {
 }
 arbitre.changerArene("info", "⌛ Création des agents...")
 for agentId in agentsScores.keys() :
-    arbitre.changerJoueur(agentId, "life", 100)
+	arbitre.changerJoueur(agentId, "life", 100)
 
 # Affichage dans l'arène du début de la partie par l'arbitre
 # arbitre.changerArene("info", "🟢 C'est parti !")
@@ -98,7 +101,7 @@ while True:
 	arbitre.actualiser()
 
 	# TODO : application des règles du jeu à chaque tick
-	...
+	# ...
 
 	# Affichage du score des 2 bots en temps réel
 	arbitre.changerArene("info", tableauScores)
