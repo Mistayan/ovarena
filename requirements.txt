@@ -7,5 +7,4 @@ certifi
 urllib3
 sqlalchemy
 pylint
-unittest
 python-dotenv
