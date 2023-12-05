@@ -1,14 +1,14 @@
+"""
+Ce ficier python est utilisé pour instancier une connexion 
+au __robot OVA__ **ou** un __Agent virtuel__
+le robot peut être contrôllé via les différentes méthodes de l'API exposées
+"""
 import random
 import time
 
 import j2l.pyrobotx.client as ova
 from j2l.pyrobotx.robot import IRobot, RobotEvent
 
-"""
-Ce ficier python est utilisé pour instancier une connexion 
-au __robot OVA__ **ou** un __Agent virtuel__
-le robot peut être contrôllé via les différentes méthodes de l'API exposées
-"""
 
 # Pour piloter une ova via un broker MQTT
 robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
