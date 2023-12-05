@@ -22,11 +22,11 @@ robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
 
 # Appel de la callback on_event pour chaque évènements du robot
 def on_event(source, event, value):
-  """
-  Affiche les évennements reçus dans la console,
-  pour aider le joueur à comprendre ce qu'il se passe sur son robot
-  """
-  print("Rx event", event, "from", source, ":", value)
+    """
+    Affiche les évennements reçus dans la console,
+    pour aider le joueur à comprendre ce qu'il se passe sur son robot
+    """
+    print("Rx event", event, "from", source, ":", value)
 
 
 robot.addEventListener(RobotEvent.imageReceived, on_event)
