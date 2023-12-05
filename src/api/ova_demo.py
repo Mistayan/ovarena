@@ -5,7 +5,8 @@ import j2l.pyrobotx.client as ova
 from j2l.pyrobotx.robot import IRobot, RobotEvent
 
 """
-Ce ficier python est utilisé pour instancier une connexion au __robot OVA__ **ou** un __Agent virtuel__
+Ce ficier python est utilisé pour instancier une connexion 
+au __robot OVA__ **ou** un __Agent virtuel__
 le robot peut être contrôllé via les différentes méthodes de l'API exposées
 """
 
@@ -21,7 +22,11 @@ robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
 
 # Appel de la callback on_event pour chaque évènements du robot
 def on_event(source, event, value):
-    print("Rx event", event, "from", source, ":", value)
+  """
+  Affiche les évennements reçus dans la console,
+  pour aider le joueur à comprendre ce qu'il se passe sur son robot
+  """
+  print("Rx event", event, "from", source, ":", value)
 
 
 robot.addEventListener(RobotEvent.imageReceived, on_event)
