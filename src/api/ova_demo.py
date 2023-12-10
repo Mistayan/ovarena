@@ -1,17 +1,19 @@
 """
-Demo de l'API Python pour piloter une Ova
+Ce ficier python est utilisé pour instancier une connexion 
+au __robot OVA__ **ou** un __Agent virtuel__
+le robot peut être contrôllé via les différentes méthodes de l'API exposées
 """
-
 import random
 import time
 
 import j2l.pyrobotx.client as ova
 from j2l.pyrobotx.robot import IRobot, RobotEvent
 
+
 # Pour piloter une ova via un broker MQTT
 robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
                                   port=1883,
-                                  useProxy=False)
+                                  useProxy=False)  # Agent Virtuel
 
 
 # Pour piloter une ova sur un LAN ou si vous êtes directement connecté à son point d'accès
@@ -24,6 +26,7 @@ def on_update(source, event, value):
     Callback appelée à chaque évènement du robot
     """
     print("Rx event", event, "from", source, ":", value)
+
 
 
 robot.addEventListener(RobotEvent.imageReceived, on_update)
