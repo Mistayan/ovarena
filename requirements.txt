@@ -6,3 +6,5 @@ charset-normalizer
 certifi
 urllib3
 sqlalchemy
+pylint
+python-dotenv

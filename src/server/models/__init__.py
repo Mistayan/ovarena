@@ -1,3 +1,7 @@
-from .Base import Base
-from .Direction import Direction
-from .Player import Player
+"""
+Models package.
+Contains all the models used in the game.
+"""
+from .base import Base
+from .direction import Direction
+from .player import Player

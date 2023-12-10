@@ -1,7 +1,17 @@
+"""
+Define the base model for all other models in the application.
+"""
+from abc import ABC
+
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 
-class Base(DeclarativeBase):
+
+class Base(DeclarativeBase, ABC):
+    """
+    Base model class that includes SQLAlchemy's DeclarativeBase and
+    a naming convention for constraints.
+    """
     metadata = MetaData(naming_convention={
         "ix": 'ix_%(column_0_label)s',
         "uq": "uq_%(table_name)s_%(column_0_name)s",
