@@ -1,0 +1,70 @@
+{
+  "maxRobot": 5,
+  "blind": [
+    true,
+    false,
+    false,
+    false
+  ],
+  "mass": [
+    10,
+    100,
+    10,
+    10
+  ],
+  "teamName": [
+    "redPill",
+    "bluePill"
+  ],
+  "teamColor": [
+    [
+      255,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      255
+    ]
+  ],
+  "teamSize": [
+    2,
+    2
+  ],
+  "teamShape": [
+    "circle",
+    "square"
+  ],
+  "teamShapeParam": [
+    0.5,
+    0.5
+  ],
+  "mapRandFreq": 0.0,
+  "gridColumns": 60,
+  "gridRows": 40,
+  "mapTileNames": [
+    "wall",
+    "ground",
+    "mud",
+    "objective",
+    "robot",
+    "?"
+  ],
+  "mapFriction": [
+    1.0,
+    0.0,
+    0.5,
+    0.1,
+    1.0,
+    0.0
+  ],
+  "mapImgs": [
+    "https://i.imgur.com/hDLyrOG.jpeg",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ]
+}

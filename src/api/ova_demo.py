@@ -17,22 +17,22 @@ robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
 
 
 # Pour piloter une ova sur un LAN ou si vous êtes directement connecté à son point d'accès
-# robot:IRobot = OvaClientHttpV2(url="192.168.x.x")  # Robot OVA
+# robot:IRobot = OvaClientHttpV2(url="192.168.x.x")
 
 
-# Appel de la callback on_event pour chaque évènements du robot
-def on_event(source, event, value):
+# Appel de la callback onRobotEvent pour chaque évènements du robot
+def on_update(source, event, value):
     """
-    Affiche les évennements reçus dans la console,
-    pour aider le joueur à comprendre ce qu'il se passe sur son robot
+    Callback appelée à chaque évènement du robot
     """
     print("Rx event", event, "from", source, ":", value)
 
 
-robot.addEventListener(RobotEvent.imageReceived, on_event)
-robot.addEventListener(RobotEvent.robotChanged, on_event)
-robot.addEventListener(RobotEvent.robotConnected, on_event)
-robot.addEventListener(RobotEvent.robotDisconnected, on_event)
+
+robot.addEventListener(RobotEvent.imageReceived, on_update)
+robot.addEventListener(RobotEvent.robotChanged, on_update)
+robot.addEventListener(RobotEvent.robotConnected, on_update)
+robot.addEventListener(RobotEvent.robotDisconnected, on_update)
 
 print("########################")
 while not robot.isConnectedToRobot():
@@ -81,7 +81,7 @@ print("📸 Test camera")
 robot.enableCamera(True)
 for i in range(50):
     robot.update()
-    red, green, blue , n = 0, 0, 0, 0
+    red, green, blue, n = 0, 0, 0, 0
     w, h = robot.getImageWidth(), robot.getImageHeight()
     for x in range(0, w, 10):
         for y in range(0, h, 10):

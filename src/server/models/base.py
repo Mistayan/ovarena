@@ -1,13 +1,16 @@
+"""
+Define the base model for all other models in the application.
+"""
+from abc import ABC
+
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 
-"""
-class de Base pour définir les conventions de nommage et autres éléments à appliquer sur tous les objets utilisant cette classe comme 
-Base sqlAlchemy
-"""
-class Base(DeclarativeBase):
+
+class Base(DeclarativeBase, ABC):
     """
-    définit les conventions de nommage des tables et clées liées aux objets en BDD
+    Base model class that includes SQLAlchemy's DeclarativeBase and
+    a naming convention for constraints.
     """
     metadata = MetaData(naming_convention={
         "ix": 'ix_%(column_0_label)s',
