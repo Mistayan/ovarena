@@ -28,6 +28,7 @@ class Player(Base):
     y = Column(Integer)
     direction = Column(Enum(Direction))
     score = Column(Integer, default=0)
+    known_map = Column(String)
 
     @property
     def serialize(self):
