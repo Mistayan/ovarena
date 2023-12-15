@@ -26,7 +26,7 @@ class Player(Base):
     inventory = Column(String)
     x = Column(Integer)
     y = Column(Integer)
-    direction = Column(Enum(Direction))
+    direction = Column(Direction)
     score = Column(Integer, default=0)
     known_map = Column(String)
 
