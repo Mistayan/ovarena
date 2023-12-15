@@ -1,13 +1,12 @@
 """
 Define the base model for all other models in the application.
 """
-from abc import ABC
 
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 
 
-class Base(DeclarativeBase, ABC):
+class Base(DeclarativeBase):
     """
     Base model class that includes SQLAlchemy's DeclarativeBase and
     a naming convention for constraints.
