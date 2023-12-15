@@ -171,4 +171,5 @@ class Gestionnaire(IManager):
 if __name__ == '__main__':
     DefaultClientSettings.dtSleepUpdate = 100
     DefaultClientSettings.dtPing = 1000
-    pass
+    with Gestionnaire("name", "arena", "login", "password") as gest:
+        gest.game_loop()
