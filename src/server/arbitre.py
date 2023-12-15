@@ -18,7 +18,7 @@ arbitre = Gestionnaire(nom=os.environ['ARBITRE_NAME'] or input("👾 id: "),
                        url="mqtt.jusdeliens.com",
                        verbosite=2)
 
-# rules = agent.jeu
+# rules => server/rules.json
 
 # Set arena rules
 arbitre.changerArene("maxRobot", 5)  # 2 players on each team + 1 monitor
