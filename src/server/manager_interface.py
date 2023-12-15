@@ -4,6 +4,7 @@ This class defines the actions a Manager can do on the game.
 """
 
 from abc import ABC, abstractmethod
+from time import sleep
 from typing import Dict, Any, List
 
 from src.api.j2l.pytactx.agent import Agent
@@ -21,6 +22,16 @@ class IManager(Agent, ABC):
     def __init__(self, nom, arene, username, password, server="mqtt.jusdeliens.com"):
         super().__init__(nom, arene, username, password, server=server, verbosity=2)
 
+    @abstractmethod
+    def game_loop(self):
+        """
+        This method is the main loop of the game.
+        it should only be called once
+        before running a game loop, ensure that all callbacks are set
+        """
+        while True:
+            sleep(0.1)
+            self.update()
     ##########################
     # ARENA RULES MANAGEMENT #
     ##########################
@@ -32,7 +43,6 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    @property
     def get_rules(self) -> Dict[str, Any]:
         """
         Get the rules applied to the arena.
@@ -40,7 +50,6 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    @property
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
         pass
@@ -60,14 +69,14 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def __start_game(self, *args, **kwargs) -> bool:
+    def start_game(self, *args, **kwargs) -> bool:
         """
         This method is called when the game starts.
         """
         pass
 
     @abstractmethod
-    def __end_game(self, *args, **kwargs) -> bool:
+    def end_game(self, *args, **kwargs) -> bool:
         """
         This method is called when the game ends.
         """
@@ -103,7 +112,7 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def __update_players(self, *args, **kwargs):
+    def update_players(self, *args, **kwargs):
         """
         This method is called when a player connects or disconnects.
         """
@@ -119,7 +128,7 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def __get_player(self, player_id: int) -> Player:
+    def get_player(self, player_id: int) -> Player:
         """
         Get a player.
         :param player_id: the id of the player to get
@@ -128,8 +137,23 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def __wait_all_players(self, *args, **kwargs):
+    def wait_all_players(self, *args, **kwargs):
         """
         This method is called when a player connects or disconnects.
         """
         pass
+
+    def __enter__(self):
+        """
+        called when entering a with statement
+        """
+        if not self.isConnectedToRobot():
+            self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        called when exiting a with statement
+        """
+        self.disconnect()
+        return False
