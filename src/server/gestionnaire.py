@@ -34,11 +34,11 @@ class Gestionnaire(IManager):
         self.__players: List[Player] = []
         self.__map: List[List[int]] = []
         self.__rules: Dict[str, Any] = {}
-        self.__game_state = "wait"
+        self.__game_state = "wait"  # initial state
         self.__game_states = {
-            "wait": self.wait_all_players,
-            "start": self.start_game,
-            "end": self.end_game
+            "wait": self.wait_all_players,  # wait for all players to connect
+            "in_game": self.start_game,  # all players connected
+            "end": self.end_game  # game ended: all players dead or time elapsed
         }
         self.ruleArena("info", "🔴 Arène en cours de construction ")
         with open("rules.json", "r", encoding="utf-8") as json_file:
@@ -52,8 +52,62 @@ class Gestionnaire(IManager):
         self.update()
         self.robot.addEventListener(RobotEvent.robotConnected, self.wait_all_players)
         self.robot.addEventListener(RobotEvent.robotDisconnected, self.wait_all_players)
-        # TODO : ADD THIS LINE TO EACH MANAGER_STATES !
-        # self.robot.addEventListener(RobotEvent.updated, self.__game_states[self.__game_state])
+        self.robot.addEventListener(RobotEvent.updated, self.on_update)
+
+    def on_update(self) -> None:
+        """
+        On each update, the manager checks the arena state machine and the arena events.
+        For each player, it updates the player's state machine and the player's events.
+        """
+        # auto-set game state
+        if not self.all_players_connected:
+            self.set_state("wait")
+        elif not self.__timer_running or self.__all_players_dead:
+            self.set_state("end")
+        else:
+            self.set_state("in_game")
+        # activate state events
+        self.__game_states[self.__game_state]()
+
+        # update players
+        self.update_players()
+
+    @property
+    def __all_players_dead(self) -> bool:
+        """
+        Return True if all players are dead.
+        """
+        for player in self.__players:
+            if player.health > 0:
+                return False
+        return True
+
+    @property
+    def __timer_running(self) -> bool:
+        """
+        Return True if the game time is elapsed.
+        """
+        return self.__rules["timeLimit"] <= self.__rules["timeElapsed"]
+
+    @property
+    def state(self) -> str:
+        return self.__game_state
+
+    @property
+    def all_players_connected(self) -> bool:
+        """ return True if all players are connected """
+        return len(self.players) == self.__rules["nbJoueurs"]
+
+    @property
+    def get_rules(self) -> Dict[str, Any]:
+        return deepcopy(self.__rules)
+
+    @property
+    def players(self) -> List[Player]:
+        return self.__players
+
+    def set_state(self, state: str) -> None:
+        self.__game_state = state
 
     def game_loop(self):
         """
@@ -67,10 +121,6 @@ class Gestionnaire(IManager):
     def set_rules(self, rules: Dict[str, Any]) -> None:
         self.__rules = rules
         self.robot.game("game", self.__rules)
-
-    @property
-    def get_rules(self) -> Dict[str, Any]:
-        return deepcopy(self.__rules)
 
     def set_pause(self, pause: bool) -> bool:
         self.ruleArena("pause", pause)
@@ -106,7 +156,7 @@ class Gestionnaire(IManager):
         p = self.get_player(player_id)
         self.__players.remove(p)
 
-    def update_player(self, player: Player) -> Player:
+    def update_player_stats(self, player: Player) -> Player:
         p = self.get_player(player.id)
         p.health = player.health
         p.inventory = player.inventory
@@ -116,11 +166,6 @@ class Gestionnaire(IManager):
         p.score = player.score
         p.known_map = player.known_map
         return p
-
-    @property
-    def all_players_connected(self) -> bool:
-        """ return True if all players are connected """
-        return len(self.players) == self.__rules["nbJoueurs"]
 
     def wait_all_players(self, *args, **kwargs) -> None:
         """
@@ -160,12 +205,35 @@ class Gestionnaire(IManager):
 
     def update_players(self, *args, **kwargs) -> None:
         """
-        This method is called when a player updates.
+        This method on each update, gathers players from arena and update them internally.
+        It also handles the players' events.
         """
-        pass  # TODO : implement game logic
+        # get players from arena
+        arena_players = self.robot.game("players", None)
+        if arena_players is None:
+            raise ValueError("No players found in arena")
+        # update players
+        for arena_player in arena_players:
+            player = self.get_player(arena_player["id"])
+            self.update_player_stats(player)
+            # handle player events
+            if player.health <= 0:
+                player.set_position(0, 0)
+            # TODO : HANDLE OTHER EVENTS
 
     def __str__(self):
         return "Gestionnaire"
+
+    def __update_player_from_arena(self, player):
+        """
+        Get the player from the arena and update it internally.
+        """
+        # get player from arena
+        arena_player = self.robot.game("player", player.name, None)
+        if arena_player is None:
+            raise ValueError(f"Player {player.name} not found in arena")
+        # update player
+        self.upadte_player(player, arena_player)
 
 
 if __name__ == '__main__':

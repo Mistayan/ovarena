@@ -32,9 +32,21 @@ class IManager(Agent, ABC):
         while True:
             sleep(0.1)
             self.update()
+
+    ############################
+    # CONNECTIVITY MANAGEMENT  #
+    ############################
+    @abstractmethod
+    def on_update(self) -> None:
+        """
+        Define what must be done on each update.
+        """
+        pass
+
     ##########################
     # ARENA RULES MANAGEMENT #
     ##########################
+
     @abstractmethod
     def set_rules(self, rules: Dict[str, Any]) -> None:
         """
@@ -119,7 +131,7 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def update_player(self, player: Player) -> Player:
+    def update_player_stats(self, player: Player) -> Player:
         """
         Update a player.
         :param player: the player to update
