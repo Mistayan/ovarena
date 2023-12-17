@@ -7,52 +7,91 @@ It defines the methods that can be called by the server's EntityManager.
 """
 
 import logging
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import root_config
-from src.api.j2l.pyrobotx.robot import IRobot
-from src.api.j2l.pytactx.agent import Agent
+from src.server.gestionnaire import Gestionnaire
+from src.server.states.possible_states import StateEnum
 
 
-class State(ABC):
+class IState(ABC):
+    """ An IFace is an empty shell. Its only purpose is to define a standard structure for every children """
+
+    @abstractmethod
+    def handle(self):
+        """ Abstract method to enforce children implementing this"""
+        ...
+
+
+class State(IState, ABC):
     """
-    Base class for all server side states.
+    Base State class.
+    defines standard actions for specific children states
     """
 
     @abstractmethod
-    def __init__(self, agent: Agent):
-        self.agent: Agent = agent
-        self.robot: IRobot = agent.robot
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(root_config.LOGGING_LEVEL)
-        self.logger.addHandler(logging.StreamHandler())
+    def __init__(self):
+        self.__context = None
+
+    @property
+    @abstractmethod
+    def name(self) -> StateEnum:
+        """
+        Return the Enum value of the state
+        this should be implemented as a property
+        """
+        raise NotImplementedError
+
+    def set_context(self, context):
+        self.__context = context
+
+    def switch_state(self, state: int):
+        self.__context.set_actual_state(state)
+
+
+class BaseState(State):
+
+    def __init__(self, agent: Gestionnaire):
+        super().__init__()
+        self._agent = agent
+        self._logger = logging.getLogger(self.__class__.__name__ + f" : {self._agent.robot.name}")
+        self._logger.setLevel(root_config.LOGGING_LEVEL)
+
+    def handle(self):
+        self._on_handle()
 
     @abstractmethod
-    def __enter__(self):
+    def _on_handle(self):
         """
-        Called when the state is entered.
+        This method is called by the handle method.
+        It must be implemented by the children to reflect the state's behavior.
+        - WARNING :
+        get the manager's wanted value on entering this method, to avoid calling the property twice and risk
+        getting a different value (async issues)
+        ie :
+        all_connected = self._agent.all_players_connected
+        ... do stuff with all_connected
         """
+        ...
 
-    @abstractmethod
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Called when the state is exited.
-        """
 
-    @abstractmethod
-    def on_player_event(self, event, value):
-        """
-        Called when an event is received.
-        """
+class StateMachine:
+    def __init__(self):
+        self.__actual_state = 0
+        self.__states = []
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._logger.setLevel(logging.DEBUG)
 
-    @abstractmethod
-    def on_arena_event(self, source, event, value):
-        """
-        Called when an arena event is received.
-        """
+    def add_state(self, state: State):
+        self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.NAME}")
+        state.set_context(self)
+        self.__states.append(state)
 
-    @abstractmethod
-    def on_image(self, image):
-        """
-        Called when an image is received.
-        """
+    def set_actual_state(self, state: int):
+        self._logger.debug(f"Setting actual state to {state}")
+        self.__actual_state = state
+
+    def handle(self):
+        """Execute the actual state handle method"""
+        self._logger.debug(f'Handling state : {self.__actual_state}')
+        self.__states[self.__actual_state].handle()
