@@ -56,7 +56,7 @@ class BaseState(State):
     def __init__(self, agent: IManager):
         super().__init__()
         self._agent = agent
-        self._logger = logging.getLogger(self.__class__.__name__ + f" : {self._agent.robot.name}")
+        self._logger = logging.getLogger(self.__class__.__name__ + f" : {self._agent.get_state()}")
         self._logger.setLevel(root_config.LOGGING_LEVEL)
 
     def handle(self):

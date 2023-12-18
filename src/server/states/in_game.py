@@ -36,7 +36,7 @@ class InGame(BaseState):
     def __unpause(self):
         self._agent.set_pause(False)
         self._agent.display("🟢 Reprise de la partie !")
-        self._agent.update()
+        # self._agent.update()
 
     def __handle_players_events(self):
         """

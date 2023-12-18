@@ -41,7 +41,7 @@ class WaitPlayers(BaseState):
         """
         self._agent.ruleArena("pause", True)
         self._agent.ruleArena("info", "En attente des joueurs...")
-        self._agent.update()
+        # self._agent.update()
 
     def __start_game(self):
         """
