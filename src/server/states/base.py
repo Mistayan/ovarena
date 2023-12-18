@@ -6,12 +6,13 @@ This class is the base class for all server side states.
 It defines the methods that can be called by the server's EntityManager.
 """
 
+from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from typing import List
 
 import root_config
-from src.server.gestionnaire import Gestionnaire
+from src.server.manager_interface import IManager
 from src.server.states.possible_states import StateEnum
 
 
@@ -52,7 +53,7 @@ class State(IState, ABC):
 
 class BaseState(State):
 
-    def __init__(self, agent: Gestionnaire):
+    def __init__(self, agent: IManager):
         super().__init__()
         self._agent = agent
         self._logger = logging.getLogger(self.__class__.__name__ + f" : {self._agent.robot.name}")
