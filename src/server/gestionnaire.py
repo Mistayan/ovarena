@@ -6,7 +6,7 @@ Apply the rules of the arena.
 import json
 from copy import deepcopy
 from time import sleep
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 from src.api.j2l.pyrobotx.client import DefaultClientSettings
 from src.api.j2l.pyrobotx.robot import RobotEvent
@@ -34,8 +34,14 @@ class Gestionnaire(IManager):
         :param username: username of the robot : should be registered in a .dotenv file
         :param password: password of the robot : should be registered in a .dotenv file
         """
+        self.__TIME_LIMIT = 1000 * 60 * 3 + 1000 * 20  # 3minutes 20 seconds
+        self.__start_time = 0
+        self.__paused_time = 0
+        self.__loop_start_time = 0
+        self.__loop_end_time = 0
+
         print("Gestionnaire init")
-        self.players: List[Player] = []
+        self.players: List[str] = []
         self._robot = super().__init__(nom, arene, username, password, server="mqtt.jusdeliens.com")
         print("Gestionnaire done super init")
         # define variables to retain information about the game
@@ -59,21 +65,24 @@ class Gestionnaire(IManager):
             self.set_rules(self.__rules)
         self.ruleArena("pause", True)
         self.ruleArena("reset", True)
-        print(self.get_rules)
+        print("BEFORE", self.game)
         # change manager's State to wait for players
         self.ruleArena("info", "En attente des joueurs...")
         self.update()
+        print("AFTER", self.game)
         self.robot.addEventListener(RobotEvent.robotConnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.updated, self.on_update)
 
-    def on_update(self) -> None:
+    def on_update(self, other, event, value) -> None:
         """
         On each update, the manager checks the arena state machine and the arena events.
         For each player, it updates the player's state machine and the player's events.
         """
         # Let curent state handle the update and
-        self.__game_state.handle()
+        print(f"on_update : {self.__game_state.name} => {other.__class__.__name__} Received : {event} : {value}")
+        self.__update_timers()
+        self.__state_machine.handle()
 
         # update players
         self.update_players()
@@ -93,7 +102,7 @@ class Gestionnaire(IManager):
         """
         Return False if the game time is elapsed.
         """
-        return self.game["timeElapsed"] <= self.game["timeLimit"]
+        return self.game["t"] <= self.__start_time + self.__paused_time + self.__TIME_LIMIT
 
     @property
     def game_running(self) -> bool:
@@ -105,7 +114,7 @@ class Gestionnaire(IManager):
     @property
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
-        return len(self.__players) == self.__rules["nbJoueurs"]
+        return len(self.__players) == self.__rules.get("nPlayers")
 
     @property
     def get_rules(self) -> Dict[str, Any]:
@@ -113,20 +122,33 @@ class Gestionnaire(IManager):
 
     @property
     def __players(self) -> List[Player]:
-        return self.__players
+        players_names: List[str] = self.players
+        players: List[Player] = []
+        p = None
+        for player_name in players_names:
+            try:
+                p = self.get_player(player_name)
+            except ValueError:
+                p = Player(player_name)
+            if p is not None:
+                players.append(p)
+        return players
 
     def game_loop(self):
         """
         This method is the main loop of the game.
         """
         print("Game loop started")
-        while True:
-            sleep(0.1)
+        self.__start_time = self.game['t']
+        while self.game_running:
+            self.__loop_start_time = self.game['t']
             self.update()
+            self.__loop_end_time = self.game['t']
+            sleep(1)
 
     def set_rules(self, rules: Dict[str, Any]) -> None:
         self.__rules = rules
-        self.robot.game("game", self.__rules)
+        print(self)
 
     def set_pause(self, pause: bool) -> bool:
         self.ruleArena("pause", pause)
@@ -140,9 +162,10 @@ class Gestionnaire(IManager):
             return True
         return False
 
-    def get_player(self, player_id: int) -> Player:
-        for player in self.__players:
-            if player.id == player_id:
+    def get_player(self, player_id: Union[int | str]) -> Player:
+        for player in self.players:
+            if isinstance(player_id, int) and player.id == player_id \
+                    or isinstance(player_id, str) and player == player_id:
                 return player
         raise ValueError(f"Player {player_id} not found")
 
@@ -162,16 +185,8 @@ class Gestionnaire(IManager):
         p = self.get_player(player_id)
         self.__players.remove(p)
 
-    def update_player_stats(self, player: Player) -> Player:
-        p = self.get_player(player.id)
-        p.health = player.health
-        p.inventory = player.inventory
-        p.x = player.x
-        p.y = player.y
-        p.direction = player.direction
-        p.score = player.score
-        p.known_map = player.known_map
-        return p
+    def update_player_stats(self, player: Union[int | str]) -> Player:
+        pass
 
     def update_players(self, *args, **kwargs) -> None:
         """
@@ -179,16 +194,9 @@ class Gestionnaire(IManager):
         It also handles the players' events.
         """
         # get players from arena
-        arena_players = self.robot.game("players", None)
+        arena_players = self.players
         if arena_players is None:
             raise ValueError("No players found in arena")
-        # update players
-        for arena_player in arena_players:
-            player = self.get_player(arena_player["id"])
-            self.update_player_stats(player)
-            # handle player events
-            if player.health <= 0:
-                player.set_position(0, 0)
             # TODO : HANDLE OTHER EVENTS
 
     def __str__(self):
@@ -200,6 +208,16 @@ class Gestionnaire(IManager):
         :param message: the message to display
         """
         self.ruleArena("info", message)
+
+    def get_state(self):
+        return self.__game_state.name
+
+    def __update_timers(self):
+        """
+        Depending on the current state, time passes differently.
+        """
+        if self.__game_state == StateEnum.WAIT_PLAYERS:
+            self.__paused_time += self.game['t'] - (self.__loop_end_time - self.__loop_start_time)
 
 
 if __name__ == '__main__':
