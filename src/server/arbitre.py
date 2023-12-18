@@ -9,14 +9,17 @@ https://tutos.jusdeliens.com/index.php/2020/01/14/pytactx-prise-en-main/
 import os
 from time import sleep
 
+import root_config
 from src.api.j2l.pytactx.agent import AgentFr as Gestionnaire
 
-arbitre = Gestionnaire(nom=os.environ['ARBITRE_NAME'] or input("👾 id: "),
-                       arene=os.environ['ARENA_NAME'] or input("🎲 arena: "),
+#
+arbitre = Gestionnaire(nom=os.environ.get('ARBITRE_NAME', None) or input("👾 id: "),
+                       arene=os.environ.get('ARENA_NAME', None) or input("🎲 arena: "),
                        username="demo",
-                       password=os.environ['ARENA_PLAYER_PASS'] or input("🔑 password: "),
+                       password=os.environ.get('ARENA_PLAYER_PASS', None) or input("🔑 password: "),
                        url="mqtt.jusdeliens.com",
-                       verbosite=2)
+                       verbosite=root_config.LOGGING_LEVEL,
+                       proxy=False)
 
 # rules => server/rules.json
 
