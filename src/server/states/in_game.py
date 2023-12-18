@@ -26,9 +26,9 @@ class InGame(BaseState):
         Handle the game operations
         """
         if not self._agent.all_players_connected:
-            return self._agent.__setstate__(StateEnum.WAIT_PLAYERS)
+            return self.switch_state(StateEnum.WAIT_PLAYERS)
         if not self._agent.game_running:
-            return self._agent.__setstate__(StateEnum.END_GAME)
+            return self.switch_state(StateEnum.END_GAME)
         if self._agent.game["pause"]:
             return self.__unpause()
         self.__update()

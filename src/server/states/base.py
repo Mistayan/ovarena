@@ -8,6 +8,7 @@ It defines the methods that can be called by the server's EntityManager.
 
 import logging
 from abc import ABC, abstractmethod
+from typing import List
 
 import root_config
 from src.server.gestionnaire import Gestionnaire
@@ -31,7 +32,7 @@ class State(IState, ABC):
 
     @abstractmethod
     def __init__(self):
-        self.__context = None
+        self.__context: StateMachine = None
 
     @property
     @abstractmethod
@@ -45,7 +46,7 @@ class State(IState, ABC):
     def set_context(self, context):
         self.__context = context
 
-    def switch_state(self, state: int):
+    def switch_state(self, state: StateEnum):
         self.__context.set_actual_state(state)
 
 
@@ -76,20 +77,23 @@ class BaseState(State):
 
 
 class StateMachine:
+
     def __init__(self):
-        self.__actual_state = 0
-        self.__states = []
+        self.__actual_state: int = 0
+        self.__states: List[BaseState] = []
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(logging.DEBUG)
 
-    def add_state(self, state: State):
-        self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.NAME}")
+    def add_state(self, state: BaseState):
+        if not isinstance(state, BaseState):
+            raise TypeError(f"state must be of type BaseState, got {type(state)}")
+        self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
         state.set_context(self)
         self.__states.append(state)
 
-    def set_actual_state(self, state: int):
+    def set_actual_state(self, state: StateEnum):
         self._logger.debug(f"Setting actual state to {state}")
-        self.__actual_state = state
+        self.__actual_state = state.value
 
     def handle(self):
         """Execute the actual state handle method"""

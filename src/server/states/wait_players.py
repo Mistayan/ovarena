@@ -47,4 +47,4 @@ class WaitPlayers(BaseState):
         """
         switch to the InGame state
         """
-        self._agent.__setstate__(StateEnum.IN_GAME)
+        self.switch_state(StateEnum.IN_GAME)
