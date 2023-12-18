@@ -40,7 +40,7 @@ class IManager(Agent, ABC):
     # CONNECTIVITY MANAGEMENT  #
     ############################
     @abstractmethod
-    def on_update(self) -> None:
+    def on_update(self, other, event, value) -> None:
         """
         Define what must be done on each update.
         """
@@ -158,3 +158,11 @@ class IManager(Agent, ABC):
         """
         self.disconnect()
         return False
+
+    @abstractmethod
+    def get_state(self):
+        pass
+
+    @abstractmethod
+    def display(self, text):
+        pass
