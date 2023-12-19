@@ -31,10 +31,7 @@ class State(IState, ABC):
     Base State class.
     defines standard actions for specific children states
     """
-
-    @abstractmethod
-    def __init__(self):
-        self.__context: StateMachine = None
+    __context: StateMachine
 
     @property
     @abstractmethod
@@ -61,6 +58,7 @@ class BaseState(State):
         self._logger.setLevel(root_config.LOGGING_LEVEL)
 
     def handle(self):
+        self._logger.debug(f"(Child) handled : {self.name.name}")
         self._on_handle()
 
     @abstractmethod
@@ -87,6 +85,11 @@ class StateMachine:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(root_config.LOGGING_LEVEL)
         self.__allowed_switches: Tuple[Tuple[StateEnum, StateEnum]] = tuple()
+
+    @property
+    def state(self) -> str:
+        """ return the actual state name """
+        return self.__states[self.__actual_state.value].name.name
 
     def add_state(self, state: BaseState.__class__):
         self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
