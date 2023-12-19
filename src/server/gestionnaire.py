@@ -3,12 +3,11 @@ Game manager of the arena.
 Watch the arena state machine and the arena events.
 Apply the rules of the arena.
 """
-import functools
 import json
 import logging
 from copy import deepcopy, copy
 from time import sleep
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Tuple
 
 import root_config
 from src import WaitPlayers, InGame, EndGame
@@ -16,7 +15,7 @@ from src.api.j2l.pyrobotx.client import DefaultClientSettings
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
 from src.server.models import Player
-from src.server.states.base import StateMachine, BaseState
+from src.server.states.base import StateMachine
 from src.server.states.possible_states import StateEnum
 from src.server.states.wait_players_to_connect import WaitPlayersConnexion
 
@@ -56,8 +55,16 @@ class Gestionnaire(IManager):
         self.__rules: Dict[str, Any] = {}
         self.__game_state = StateEnum.WAIT_PLAYERS  # initial state
 
-        self.initiate_state_machine(StateMachine(self), StateEnum.WAIT_PLAYERS_CONNEXION,
-                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame))
+        self.initiate_state_machine(StateMachine(self),
+                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame),
+                                    [
+                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.IN_GAME),
+                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_PLAYERS_CONNEXION),
+                                        (StateEnum.WAIT_PLAYERS, StateEnum.IN_GAME),
+                                        (StateEnum.IN_GAME, StateEnum.WAIT_PLAYERS),
+                                        (StateEnum.IN_GAME, StateEnum.END_GAME),
+                                        (StateEnum.END_GAME, StateEnum.WAIT_PLAYERS_CONNEXION)]
+                                    )
         print("Gestionnaire done init")
 
         # define the rules of the arena
@@ -224,11 +231,12 @@ class Gestionnaire(IManager):
             self.__paused_time += self.game['t'] - (self.__loop_end_time - self.__loop_start_time)
         self._logger.debug(f"Timers : start={self.__start_time}, paused={self.__paused_time}, elapsed={self.game['t']}")
 
-    def initiate_state_machine(self, machine: StateMachine,
-                               initial_state: StateEnum, states):
+    def initiate_state_machine(self, machine: StateMachine, states: tuple, links: List[Tuple[StateEnum, StateEnum]],
+                               initial_state: StateEnum = StateEnum.WAIT_PLAYERS_CONNEXION):
         self.__state_machine = StateMachine(self) if machine is None else machine
 
         [self.__state_machine.add_state(s) for s in states]
+        self.__state_machine.define_states_links(links)
         self.__state_machine.set_actual_state(initial_state)  # optional, since stateMachine starts at index 0
 
 
