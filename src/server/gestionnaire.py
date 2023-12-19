@@ -6,7 +6,7 @@ Apply the rules of the arena.
 import json
 import logging
 from copy import deepcopy, copy
-from time import sleep
+from time import perf_counter
 from typing import List, Dict, Any, Union, Tuple
 
 import root_config
@@ -18,6 +18,11 @@ from src.server.models import Player
 from src.server.states.base import StateMachine
 from src.server.states.possible_states import StateEnum
 from src.server.states.wait_players_to_connect import WaitPlayersConnexion
+
+
+def _init_logger():
+    import colorama
+    colorama.init()
 
 
 class Gestionnaire(IManager):
@@ -41,19 +46,14 @@ class Gestionnaire(IManager):
         self._logger.setLevel(root_config.LOGGING_LEVEL)
         self.__start_time = 0
         self.__paused_time = 0
-        self.__loop_start_time = 0
-        self.__loop_end_time = 0
         self.__game_running = False
         self.__registered_players: List[Player] = []
 
-        print("Gestionnaire init")
-        self.players: List[str] = []
         self._robot = super().__init__(nom, arene, username, password, server="mqtt.jusdeliens.com")
-        print("Gestionnaire done super init")
+        _init_logger()
         # define variables to retain information about the game
         self.__map: List[List[int]] = []
         self.__rules: Dict[str, Any] = {}
-        self.__game_state = StateEnum.WAIT_PLAYERS  # initial state
 
         self.initiate_state_machine(StateMachine(self),
                                     (WaitPlayersConnexion, WaitPlayers, InGame, EndGame),
@@ -63,9 +63,8 @@ class Gestionnaire(IManager):
                                         (StateEnum.WAIT_PLAYERS, StateEnum.IN_GAME),
                                         (StateEnum.IN_GAME, StateEnum.WAIT_PLAYERS),
                                         (StateEnum.IN_GAME, StateEnum.END_GAME),
-                                        (StateEnum.END_GAME, StateEnum.WAIT_PLAYERS_CONNEXION)]
-                                    )
-        print("Gestionnaire done init")
+                                        (StateEnum.END_GAME, StateEnum.WAIT_PLAYERS_CONNEXION)],
+                                    initial_state=StateEnum.WAIT_PLAYERS_CONNEXION)
 
         # define the rules of the arena
         self.ruleArena("info", "🔴 Arène en cours de construction ")
@@ -84,14 +83,16 @@ class Gestionnaire(IManager):
         self.robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.updated, self.on_update)
         print("AFTER", self.game)
+        print("Gestionnaire done init")
 
     def on_update(self, other, event, value) -> None:
         """
         On each update, the manager checks the arena state machine and the arena events.
         For each player, it updates the player's state machine and the player's events.
         """
+        print(f"on_update : {self.state} => {other.__class__.__name__} Received : {event} : {value}")
+        super()._onUpdated(other, event, value)
         # Let curent state handle the update and
-        print(f"on_update : {self.__game_state.name} => {other.__class__.__name__} Received : {event} : {value}")
         self.__update_timers()
         self.__state_machine.handle()
 
@@ -116,9 +117,9 @@ class Gestionnaire(IManager):
         return self.game["t"] <= self.__start_time + self.__paused_time + self.__TIME_LIMIT
 
     @property
-    def game_running(self) -> bool:
+    def game_loop_running(self) -> bool:
         """
-        Return False if the game time is elapsed or all players are dead.
+        Return True if the game time is elapsed or all players are dead.
         """
         return self.__timer_running or self.__all_players_dead
 
@@ -146,15 +147,22 @@ class Gestionnaire(IManager):
         """
         print("Game loop started")
         self.__start_time = self.game['t']
-        while self.game_running:
-            self.__loop_start_time = self.game['t']
-            sleep(1)
-            self.update()
-            self.__loop_end_time = self.game['t']
+        go = True
+        while go:
+            start_time = perf_counter()
+            super().game_loop()
+            game_time = perf_counter() - start_time
+            self._logger.debug(f"Game total time : {game_time//1000}s")
+
+        self._logger.info(f"Gestionnaire : Game loop ended ! Running : {self.game_loop_running}")
+        self._logger.info(f"Game infos : {self.game_infos}")
 
     def set_rules(self, rules: Dict[str, Any]) -> None:
-        self._logger.debug("Updating rumes to : " % self.__rules)
+        self._logger.debug("Updating rules to : " % self.__rules)
         self.__rules = rules
+        for key, value in rules.items():
+            self.ruleArena(key, value)
+        self.update()
 
     def set_pause(self, pause: bool) -> bool:
         self.ruleArena("pause", pause)
@@ -174,7 +182,6 @@ class Gestionnaire(IManager):
                     or isinstance(player_id, str) and player.name == player_id:
                 self._logger.debug(f"Found player {player.name} in registered players")
                 return player
-        return None
 
     def kill_player(self, player_id: int) -> Player:
         self._logger.info(f"Killing player {player_id}")
@@ -220,16 +227,55 @@ class Gestionnaire(IManager):
         """
         self.ruleArena("info", message)
 
-    def get_state(self):
-        return self.__game_state.name
+    @property
+    def state(self) -> str:
+        return self.__state_machine.state
+
+    @property
+    def game_infos(self) -> Dict[str, Any]:
+        return {
+            self.game['t']: {
+                "state": self.state,
+                "players": self.players,
+                "registered_players": self.registered_players,
+                "time_limit": self.get_rules['timeLimit'],
+                "timers": self.__timers
+            }
+        }
+
+    @property
+    def __timers(self) -> Dict[str, Any]:
+        return {
+            "start_time": self.__start_time,
+            "paused_time": self.__paused_time,
+            "loop_execution_time": f"{int(self.last_loop_time)}ms",
+            "game_time": self.game['t'],
+
+        }
+
+    @property
+    def game_running(self) -> bool:
+        return self.__game_running
+
+    @game_running.setter
+    def game_running(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError("game_running must be a boolean")
+        if ("WAIT" or "END") in self.state:
+            raise ValueError("Cannot start game while waiting for players to connect")
+        self.__game_running = value
 
     def __update_timers(self):
         """
         Depending on the current state, time passes differently.
         """
-        if self.__game_state == StateEnum.WAIT_PLAYERS:
-            self.__paused_time += self.game['t'] - (self.__loop_end_time - self.__loop_start_time)
-        self._logger.debug(f"Timers : start={self.__start_time}, paused={self.__paused_time}, elapsed={self.game['t']}")
+        self._logger.debug("Current game state: %s" % self.state)
+        if "WAIT" in self.state:
+            self.__paused_time += (int(self.game['t']) - self.__start_time
+                                   - self.last_loop_time - self.__paused_time)
+            self._logger.debug("Paused time : %s" % self.__paused_time)
+        self._logger.debug(f"Timers : {self.__timers}")
+        self._logger.debug(f"Game state : {self.game_infos}")
 
     def initiate_state_machine(self, machine: StateMachine, states: tuple, links: List[Tuple[StateEnum, StateEnum]],
                                initial_state: StateEnum = StateEnum.WAIT_PLAYERS_CONNEXION):
@@ -240,8 +286,18 @@ class Gestionnaire(IManager):
         self.__state_machine.set_actual_state(initial_state)  # optional, since stateMachine starts at index 0
 
 
+def input_continue():
+    res = input("Start again ?").lower()
+    if len(res) and res[0] == "y":
+        return True
+    return False
+
+
 if __name__ == '__main__':
-    DefaultClientSettings.dtSleepUpdate = 100
+    DefaultClientSettings.dtSleepUpdate = 175
     DefaultClientSettings.dtPing = 1000
     with Gestionnaire("...", "...", "...", "...") as gest:
-        gest.game_loop()
+        _run = True
+        while _run:
+            gest.game_loop()
+            _run = input_continue()
