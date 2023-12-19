@@ -82,7 +82,7 @@ class StateMachine:
 
     def __init__(self, controller: IManager):
         self.__agent = controller
-        self.__actual_state: BaseState = None
+        self.__actual_state: StateEnum = None
         self.__states: List[BaseState] = []
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(root_config.LOGGING_LEVEL)
@@ -116,7 +116,7 @@ class StateMachine:
         if not self.__is_allowed(requested_state):
             raise ValueError(f"State {self.__actual_state.name} "
                              f"is not allowed to switch to {requested_state.name}")
-        self.__actual_state = requested_state.value
+        self.__actual_state = requested_state
 
     def handle(self):
         """Execute the actual state handle method"""

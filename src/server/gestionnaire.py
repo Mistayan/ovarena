@@ -243,5 +243,5 @@ class Gestionnaire(IManager):
 if __name__ == '__main__':
     DefaultClientSettings.dtSleepUpdate = 100
     DefaultClientSettings.dtPing = 1000
-    with Gestionnaire("...", "...", "...", "...") as gest:
+    with Gestionnaire("kaliopeaHelios", "minova", "demo", "demo") as gest:
         gest.game_loop()
