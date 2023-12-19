@@ -373,6 +373,9 @@ class Gestionnaire(IManager):
 if __name__ == '__main__':
     import dotenv
 
+    DefaultClientSettings.dtSleepUpdate = 100
+    DefaultClientSettings.dtPing = 1000
+
     dotenv.load_dotenv()
     print(os.getenv("USER"))
     with Gestionnaire(
