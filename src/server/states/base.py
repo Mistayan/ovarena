@@ -44,7 +44,7 @@ class State(IState, ABC):
         """
         raise NotImplementedError
 
-    def set_context(self, context):
+    def set_context(self, context: StateMachine):
         self.__context = context
 
     def switch_state(self, state: StateEnum):
@@ -56,7 +56,7 @@ class BaseState(State):
     def __init__(self, agent: IManager):
         super().__init__()
         self._agent = agent
-        self._logger = logging.getLogger(self.__class__.__name__ + f" : {self._agent.get_state()}")
+        self._logger = logging.getLogger(self.__class__.__name__ + f" : {self.name}")
         self._logger.setLevel(root_config.LOGGING_LEVEL)
 
     def handle(self):
@@ -79,21 +79,24 @@ class BaseState(State):
 
 class StateMachine:
 
-    def __init__(self):
+    def __init__(self, controller: IManager):
+        self.__agent = controller
         self.__actual_state: int = 0
         self.__states: List[BaseState] = []
         self._logger = logging.getLogger(self.__class__.__name__)
-        self._logger.setLevel(logging.DEBUG)
+        self._logger.setLevel(root_config.LOGGING_LEVEL)
 
-    def add_state(self, state: BaseState):
-        if not isinstance(state, BaseState):
-            raise TypeError(f"state must be of type BaseState, got {type(state)}")
+    def add_state(self, state: BaseState.__class__):
         self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
-        state.set_context(self)
-        self.__states.append(state)
+        state_object = state(self.__agent)
+        state_object.set_context(context=self)
+        if not isinstance(state_object, BaseState):
+            raise TypeError(f"State {state_object} is not a subclass of BaseState")
+        self.__states.append(state_object)
+        self._logger.debug(f"New state list : {self.__states}")
 
     def set_actual_state(self, state: StateEnum):
-        self._logger.debug(f"Setting actual state to {state}")
+        self._logger.warning(f"Setting actual state to {state}")
         self.__actual_state = state.value
 
     def handle(self):

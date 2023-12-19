@@ -5,7 +5,7 @@ This class defines the actions a Manager can do on the game.
 
 from abc import ABC, abstractmethod
 from time import sleep
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Union
 
 import root_config
 from src.api.j2l.pytactx.agent import Agent
@@ -129,20 +129,13 @@ class IManager(Agent, ABC):
         pass
 
     @abstractmethod
-    def get_player(self, player_id: int) -> Player:
+    def get_player(self, player_id: Union[int | str]) -> Player:
         """
         Get a player.
         :param player_id: the id of the player to get
         :return: the player reference if found, None otherwise
         """
         pass
-
-    # @abstractmethod
-    # def wait_all_players(self, *args, **kwargs):
-    #     """
-    #     This method is called when a player connects or disconnects.
-    #     """
-    #     pass
 
     def __enter__(self):
         """
@@ -166,3 +159,8 @@ class IManager(Agent, ABC):
     @abstractmethod
     def display(self, text):
         pass
+
+    def __del__(self):
+        self.disconnect()
+        print("Manager deleted")
+
