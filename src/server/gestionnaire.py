@@ -12,6 +12,7 @@ from typing import List, Dict, Any, Union, Tuple
 
 import root_config
 from src import WaitPlayers, InGame, EndGame
+from src.api.j2l.pyrobotx.client import DefaultClientSettings
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
 from src.server.models import Player
@@ -166,7 +167,6 @@ class Gestionnaire(IManager):
 
     def update_rules(self, rules: Dict[str, Any]) -> None:
         self._logger.debug("Updating rules to : " % self.__rules)
-        self.__rules = rules
         for key, value in rules.items():
             self.ruleArena(key, value)
         self.update()
@@ -313,5 +313,7 @@ class Gestionnaire(IManager):
 
 
 if __name__ == '__main__':
+    DefaultClientSettings.dtSleepUpdate = 100
+    DefaultClientSettings.dtPing = 1000
     with Gestionnaire("...", "...", "...", "...") as gest:
         gest.game_loop()
