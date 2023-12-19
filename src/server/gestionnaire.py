@@ -147,11 +147,15 @@ class Gestionnaire(IManager):
         """
         print("Game loop started")
         self.__start_time = self.game['t']
-        while self.game_running:
-            self.__loop_start_time = self.game['t']
-            sleep(1)
-            self.update()
-            self.__loop_end_time = self.game['t']
+        go = True
+        while go:
+            start_time = perf_counter()
+            super().game_loop()
+            game_time = perf_counter() - start_time
+            self._logger.debug(f"Game total time : {game_time//1000}s")
+
+        self._logger.info(f"Gestionnaire : Game loop ended ! Running : {self.game_loop_running}")
+        self._logger.info(f"Game infos : {self.game_infos}")
 
     def set_rules(self, rules: Dict[str, Any]) -> None:
         self._logger.debug("Updating rules to : " % self.__rules)
