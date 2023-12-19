@@ -5,11 +5,12 @@ Handles waiting for players to connect to the arena
 
 from __future__ import annotations
 
+from src import WaitPlayers, Player
 from src.server.states.base import BaseState
 from src.server.states.possible_states import StateEnum
 
 
-class WaitPlayers(BaseState):
+class WaitPlayersConnexion(WaitPlayers):
     """
     Wait for all players to connect to the arena
     therefor, the game is paused if not all players are connected
@@ -18,32 +19,18 @@ class WaitPlayers(BaseState):
 
     @property
     def name(self) -> StateEnum:
-        return StateEnum.WAIT_PLAYERS
+        return StateEnum.WAIT_PLAYERS_CONNEXION
 
     def _on_handle(self):
         """
         If all players are connected, switch to the InGame state
         If not, wait for players to connect
+        When a player connects for the first time, it is registered to the arena
         """
         all_connected = self._agent.all_players_connected
+        self._logger.info(f"Waiting for players to register : {not all_connected}")
+        for player in self._agent.players:
+            self._agent.register_player(Player(player))
+            self._logger.debug(f"Player {player} is connected")
 
-        # Handle events
-        if not all_connected:
-            self.__wait_all_players()
-        else:
-            self.__start_game()
-
-    def __wait_all_players(self):
-        """
-        Wait for all players to connect
-        pause the game and display "waiting for players"
-        """
-        self._agent.ruleArena("pause", True)
-        self._agent.ruleArena("info", "En attente de reconnection des joueurs...")
-        # self._agent.update()
-
-    def __start_game(self):
-        """
-        switch to the InGame state
-        """
-        self.switch_state(StateEnum.IN_GAME)
+        super()._on_handle()  # if all players are connected, switch to the InGame state
