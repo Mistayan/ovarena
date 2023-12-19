@@ -4,7 +4,7 @@ This class defines the actions a Manager can do on the game.
 """
 
 from abc import ABC, abstractmethod
-from time import sleep
+from time import sleep, perf_counter
 from typing import Dict, Any, List, Union
 
 import root_config
@@ -21,9 +21,21 @@ class IManager(Agent, ABC):
 
     @abstractmethod
     def __init__(self, nom, arene, username, password, server="mqtt.jusdeliens.com"):
+        """
+        Initialize the manager.
+        use super().__init__() to initialize the Agent
+        """
+        self.__last_loop_time = 0
         print("IManager super init")
         super().__init__(nom, arene, username, password, server=server, verbosity=root_config.LOGGING_LEVEL)
         print("IManager done init")
+
+    @property
+    def last_loop_time(self) -> int:
+        """
+        Return the time of the last loop in milliseconds
+        """
+        return int(self.__last_loop_time)
 
     @abstractmethod
     def game_loop(self):
@@ -32,9 +44,11 @@ class IManager(Agent, ABC):
         it should only be called once
         before running a game loop, ensure that all callbacks are set
         """
-        while True:
-            sleep(0.1)
+        while self.game_loop_running:
+            sleep(1.501)
+            loop_start_time = perf_counter()
             self.update()
+            self.__last_loop_time = (perf_counter() - loop_start_time) * 1000
 
     ############################
     # CONNECTIVITY MANAGEMENT  #
@@ -81,6 +95,9 @@ class IManager(Agent, ABC):
 
     @abstractmethod
     def set_map(self, map: List[List[int]]) -> bool:
+        """
+        Set the map of the arena.
+        """
         pass
 
     ############################
@@ -137,12 +154,40 @@ class IManager(Agent, ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def state(self) -> str:
+        """
+        Return the actual state name of the arena.
+        """
+        pass
+
+    @abstractmethod
+    def display(self, text):
+        """
+        Display a message on the arena.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def game_loop_running(self) -> bool:
+        """
+        return True if the game is running
+        """
+        pass
+
+    def __del__(self):
+        self.disconnect()
+        print("Manager deleted")
+
     def __enter__(self):
         """
         called when entering a with statement
         """
-        if not self.isConnectedToRobot():
+        while not self.isConnectedToArena():
             self.connect()
+            sleep(1)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -151,16 +196,3 @@ class IManager(Agent, ABC):
         """
         self.disconnect()
         return False
-
-    @abstractmethod
-    def get_state(self):
-        pass
-
-    @abstractmethod
-    def display(self, text):
-        pass
-
-    def __del__(self):
-        self.disconnect()
-        print("Manager deleted")
-

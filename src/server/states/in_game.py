@@ -12,6 +12,11 @@ from src.server.states.possible_states import StateEnum
 class InGame(BaseState):
     """
     Game just started and is running
+    This state handles the game operations
+    It can :
+        - pause/unpause the game
+        - handle players events
+        - handle game events
     """
 
     @property
@@ -27,13 +32,16 @@ class InGame(BaseState):
         """
         if not self._agent.all_players_connected:
             return self.switch_state(StateEnum.WAIT_PLAYERS)
-        if not self._agent.game_running:
+        if not self._agent.game_loop_running:
             return self.switch_state(StateEnum.END_GAME)
         if self._agent.game["pause"]:
             return self.__unpause()
         self.__update()
 
     def __unpause(self):
+        """
+        The game is paused, unpause it
+        """
         self._agent.set_pause(False)
         self._agent.display("🟢 Reprise de la partie !")
         # self._agent.update()
