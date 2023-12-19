@@ -8,3 +8,4 @@ urllib3
 sqlalchemy
 pylint
 python-dotenv
+colorama
