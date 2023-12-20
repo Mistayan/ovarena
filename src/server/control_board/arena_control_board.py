@@ -104,6 +104,6 @@ class ControlBoard(tk.Tk):
 
 
 if __name__ == '__main__':
-    with Manager("kaliopeaHelios", "minova", "demo", "demo") as manager:
+    with Manager("...", "...", "...", "...") as manager:
         with ControlBoard(manager) as board:
             board.mainloop()
