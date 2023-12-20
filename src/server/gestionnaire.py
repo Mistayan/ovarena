@@ -11,13 +11,14 @@ from time import perf_counter
 from typing import List, Dict, Any, Union, Tuple
 
 import root_config
-from src import WaitPlayers, InGame, EndGame
 from src.api.j2l.pyrobotx.client import DefaultClientSettings
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
 from src.server.models import Player
+from src.server.states import WaitPlayers, InGame, EndGame
 from src.server.states.base import StateMachine
 from src.server.states.possible_states import StateEnum
+from src.server.states.wait_game_start import WaitGameStart
 from src.server.states.wait_players_to_connect import WaitPlayersConnexion
 
 __current_dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -59,10 +60,11 @@ class Gestionnaire(IManager):
         self.__rules: Dict[str, Any] = {}
 
         self.initiate_state_machine(StateMachine(self),
-                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame),
+                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame, WaitGameStart),
                                     [
-                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.IN_GAME),
-                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_PLAYERS_CONNEXION),
+                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_GAME_START),
+                                        (StateEnum.WAIT_GAME_START, StateEnum.WAIT_PLAYERS_CONNEXION),
+                                        (StateEnum.WAIT_GAME_START, StateEnum.IN_GAME),
                                         (StateEnum.WAIT_PLAYERS, StateEnum.IN_GAME),
                                         (StateEnum.IN_GAME, StateEnum.WAIT_PLAYERS),
                                         (StateEnum.IN_GAME, StateEnum.END_GAME),
