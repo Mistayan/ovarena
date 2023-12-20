@@ -50,13 +50,9 @@ class Gestionnaire(IManager):
         self._logger.setLevel(root_config.LOGGING_LEVEL)
         self.__start_time = 0
         self.__paused_time = 0
-        self.__loop_start_time = 0
-        self.__loop_end_time = 0
         self.__game_running = False
         self.__registered_players: List[Player] = []
 
-        print("Gestionnaire init")
-        self.players: List[str] = []
         self._robot = super().__init__(nom, arene, username, password, server="mqtt.jusdeliens.com")
         _init_logger()
         # define variables to retain information about the game
