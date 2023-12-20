@@ -19,15 +19,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Run pylint, fail if score is below 7.5
+    # Run pylint, fail if score is below 7.5, --ignore-path=src/api/j2l/* to ignore j2l
     - name: Analysing the code with pylint, ignore j2l
       run: |
-        pylint $(git ls-files '*.py') --ignore-path=src/api/j2l/* 
-        pylint_score=$?
-        if [ $pylint_score -lt 75 ]; then
-          echo "Pylint score is below 7.5"
-          exit 1
-        fi
+        pylint --fail-under=7.5 --ignore-path=src/api/j2l/* src
+
+    # Run unittests with coverage, fail if coverage is below 80%, fail if more than 10% tests fail
     - name: Running unittests
       run: |
-        python -m unittest
+        python -m coverage run --source=src -m unittest discover -s tests
