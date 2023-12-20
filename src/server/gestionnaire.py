@@ -315,7 +315,15 @@ class Gestionnaire(IManager):
 
 
 if __name__ == '__main__':
-    DefaultClientSettings.dtSleepUpdate = 100
-    DefaultClientSettings.dtPing = 1000
-    with Gestionnaire("...", "...", "...", "...") as gest:
+    import os
+    import dotenv
+
+    dotenv.load_dotenv()
+    print(os.getenv("USER"))
+    with Gestionnaire(
+            os.getenv("USER"),
+            os.getenv("ARENA"),
+            os.getenv("LOGIN"),
+            os.getenv("PASSWORD")
+    ) as gest:
         gest.game_loop()
