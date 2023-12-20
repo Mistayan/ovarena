@@ -14,3 +14,4 @@ class StateEnum(Enum):
     WAIT_PLAYERS = 1  # "WaitPlayersState / PauseState"
     IN_GAME = 2  # "InGameState"
     END_GAME = 3  # "EndGameState"
+    WAIT_GAME_START = 4  # "WaitGameStartState"
