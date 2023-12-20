@@ -17,6 +17,7 @@ from src.server.models import Player
 from src.server.states import WaitPlayers, InGame, EndGame
 from src.server.states.base import StateMachine
 from src.server.states.possible_states import StateEnum
+from src.server.states.wait_game_start import WaitGameStart
 from src.server.states.wait_players_to_connect import WaitPlayersConnexion
 
 __current_dir__ = os.path.dirname(os.path.abspath(__file__))
@@ -58,9 +59,8 @@ class Gestionnaire(IManager):
         self.__rules: Dict[str, Any] = {}
 
         self.initiate_state_machine(StateMachine(self),
-                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame),
+                                    (WaitPlayersConnexion, WaitPlayers, InGame, EndGame, WaitGameStart),
                                     [
-                                        (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.IN_GAME),
                                         (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_GAME_START),
                                         (StateEnum.WAIT_GAME_START, StateEnum.WAIT_PLAYERS_CONNEXION),
                                         (StateEnum.WAIT_GAME_START, StateEnum.IN_GAME),
@@ -315,5 +315,5 @@ class Gestionnaire(IManager):
 
 
 if __name__ == '__main__':
-    with Gestionnaire("...", "...", "...", "...") as gest:
+    with Gestionnaire("kaliopeaHelios", "minova", "demo", "demo") as gest:
         gest.game_loop()

@@ -5,7 +5,7 @@ Handles waiting for players to connect to the arena
 
 from __future__ import annotations
 
-from src import WaitPlayers
+from src.server.states import WaitPlayers
 from src.server.states.possible_states import StateEnum
 
 
