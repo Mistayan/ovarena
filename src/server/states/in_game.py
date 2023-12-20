@@ -32,9 +32,9 @@ class InGame(BaseState):
         """
         if not self._agent.all_players_connected:
             return self.switch_state(StateEnum.WAIT_PLAYERS)
-        if not self._agent.game_loop_running:
+        elif not self._agent.game_loop_running:
             return self.switch_state(StateEnum.END_GAME)
-        if self._agent.game["pause"]:
+        elif self._agent.game["pause"]:
             return self.__unpause()
         self.__update()
 
@@ -50,13 +50,13 @@ class InGame(BaseState):
         """
         If a player hits a wall, walks on a trap, gets hit, etc...
         """
-        ...  # TODO: handle players events
+        # TODO: handle players events
 
     def __handle_game_events(self):
         """
         If the game time is elapsed, a player is dead, etc...
         """
-        ...  # TODO: handle game events after updating players
+        # TODO: handle game events after updating players
 
     def __update(self):
         """

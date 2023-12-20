@@ -6,7 +6,7 @@ import os
 
 import colorama
 
-project_name = "ovarena"
+PROJECT_NAME = "ovarena"
 __workdir__ = os.path.dirname(os.path.abspath(__file__))
 __rootdir__ = os.path.dirname(__workdir__)
 colorama.init()

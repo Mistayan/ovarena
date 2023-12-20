@@ -18,7 +18,10 @@ from src.server.states.possible_states import StateEnum
 
 
 class IState(ABC):
-    """ An IFace is an empty shell. Its only purpose is to define a standard structure for every children """
+    """
+    An IFace is an empty shell.
+     Its only purpose is to define a standard structure for every children
+      """
 
     @abstractmethod
     def handle(self):
@@ -49,7 +52,10 @@ class State(IState, ABC):
         self.__context.set_actual_state(state)
 
 
-class BaseState(State):
+class BaseState(State, ABC):
+    """
+    Base State class.
+    """
 
     def __init__(self, agent: IManager):
         super().__init__()
@@ -67,8 +73,9 @@ class BaseState(State):
         This method is called by the handle method.
         It must be implemented by the children to reflect the state's behavior.
         - WARNING :
-        get the manager's wanted value on entering this method, to avoid calling the property twice and risk
-        getting a different value (async issues)
+        get the manager's wanted value on entering this method,
+         to avoid calling the property twice and risk
+         getting a different value (async issues)
         ie :
         all_connected = self._agent.all_players_connected
         ... do stuff with all_connected
@@ -77,6 +84,11 @@ class BaseState(State):
 
 
 class StateMachine:
+    """
+    State machine class.
+    It defines the states and the links between them.
+    When requesting to change state, it checks if the state is allowed to switch to the new state.
+    """
 
     def __init__(self, controller: IManager):
         self.__agent = controller
@@ -85,13 +97,14 @@ class StateMachine:
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(root_config.LOGGING_LEVEL)
         self.__allowed_switches: Tuple[Tuple[StateEnum, StateEnum]] = tuple()
+        self.__lock = False
 
     @property
     def state(self) -> str:
         """ return the actual state name """
         return self.__states[self.__actual_state.value].name.name
 
-    def add_state(self, state: BaseState.__class__):
+    def __add_state(self, state: BaseState.__class__):
         self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
         state_object = state(self.__agent)
         state_object.set_context(context=self)
@@ -100,7 +113,7 @@ class StateMachine:
         self.__states.append(state_object)
         self._logger.debug(f"New state list : {self.__states}")
 
-    def define_states_links(self, connexions: List[Tuple[StateEnum, StateEnum]]):
+    def __define_states_links(self, connexions: List[Tuple[StateEnum, StateEnum]]):
         """
         Define the links between states.
         The tuple must be of the form :
@@ -122,7 +135,10 @@ class StateMachine:
         self.__actual_state = requested_state
 
     def handle(self):
-        """Execute the actual state handle method"""
+        """Execute the actual state handle method
+        Warning, once called it locks the state machine, thus preventing any change to the states
+        """
+        self.__lock = True
         self._logger.debug(f'Handling state : {self.__actual_state}')
         self.__states[self.__actual_state.value].handle()
 
@@ -133,7 +149,26 @@ class StateMachine:
         if self.__actual_state is None:
             return True
         for state_from, state_to in self.__allowed_switches:
-            self._logger.debug("Checking from state : " + str(state_from.name) + " to " + str(state_to.name))
-            if self.__actual_state and state_from.name == self.__actual_state.name and state_to.name == new_state.name:
+            self._logger.debug(f"Checking from state : {str(state_from.name)} to {str(state_to.name)}")
+            if (self.__actual_state and
+                    state_from.name == self.__actual_state.name and
+                    state_to.name == new_state.name):
                 return True
         return False
+
+    def define_states(self, states: tuple, links: List[Tuple[StateEnum, StateEnum]],
+                      initial_state: StateEnum = None) -> StateMachine:
+        """
+        Initiate the state machine
+        Set context to the agent
+        Add states to the state machine
+        Define the links between states
+        """
+        if self.__lock:
+            raise RuntimeError("State machine is locked, cannot define states")
+        for s in states:
+            self.__add_state(s)
+        self.__define_states_links(links)
+        if initial_state:
+            self.set_actual_state(initial_state)
+        return self

@@ -1,3 +1,6 @@
+"""
+Define an Enum for the direction of the player
+"""
 from sqlalchemy import Enum
 
 class Direction(Enum):
