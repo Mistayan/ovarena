@@ -315,5 +315,15 @@ class Gestionnaire(IManager):
 
 
 if __name__ == '__main__':
-    with Gestionnaire("...", "...", "...", "...") as gest:
+    import os
+    import dotenv
+
+    dotenv.load_dotenv()
+    print(os.getenv("USER"))
+    with Gestionnaire(
+            os.getenv("USER"),
+            os.getenv("ARENA"),
+            os.getenv("LOGIN"),
+            os.getenv("PASSWORD")
+    ) as gest:
         gest.game_loop()
