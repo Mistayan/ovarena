@@ -11,12 +11,15 @@ on each updates (time-based)
 from datetime import datetime
 from typing import List, Dict, Any
 
-from sqlalchemy import Column, Integer, String, Enum, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
 
 from . import Base, Direction
 
 
 class Player(Base):
+    """
+    Player's instance in the arena
+    """
     __tablename__ = 'players'
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -32,6 +35,9 @@ class Player(Base):
 
     @property
     def serialize(self):
+        """
+        Return object data in easily serializable format
+        """
         return {
             'name': self.name,
             'health': self.health,
@@ -43,6 +49,9 @@ class Player(Base):
         }
 
     def __init__(self, name: str, **kw: Any):
+        """
+        create Player's instance in the arena
+        """
         super().__init__(**kw)
         self.name = name
         self.health: int = 100
@@ -53,38 +62,60 @@ class Player(Base):
         self.score: float = 0.0
 
     def __repr__(self):
+        """ string representation of the object"""
         return f"<Player(name='{self.name}', health={self.health}," \
                f"inventory={self.inventory}, x={self.x}, y={self.y}, direction={self.direction})>"
 
     def __str__(self):
-        return f"<Player(name='{self.name}', health={self.health}," \
-               f"inventory={self.inventory}, x={self.x}, y={self.y}, direction={self.direction})>"
+        """ string representation of the object"""
+        return self.__repr__()
 
     def add_score(self, score: float):
+        """
+        Add score to the player
+        """
         self.score = score
         return self.score
 
     def sub_score(self, score: float):
+        """
+        Substract score to the player
+        """
         self.score -= score
         return self.score
 
     def add_health(self, health: int):
+        """
+        Add health to the player
+        """
         self.health += health
         return self.health
 
     def sub_health(self, health: int):
+        """
+        Substract health to the player
+        """
         self.health -= health
         return self.health
 
     def add_item(self, item: Dict):
+        """
+        Add an item to the player's inventory
+        """
         self.inventory.append(item)
         return self.inventory
 
     def remove_item(self, item: Dict):
+        """
+        Remove an item from the player's inventory, drop it on the ground
+        """
         self.inventory.remove(item)
         return self.inventory
 
     def set_position(self, x: int, y: int):
+        """
+        Set the player's position
+        """
         self.x = x
         self.y = y
         return self.x, self.y

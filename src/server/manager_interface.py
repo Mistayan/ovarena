@@ -20,14 +20,15 @@ class IManager(Agent, ABC):
     """
 
     @abstractmethod
-    def __init__(self, nom, arene, username, password, server="mqtt.jusdeliens.com"):
+    def __init__(self, nom, arene, username, password):
         """
         Initialize the manager.
         use super().__init__() to initialize the Agent
         """
         self.__last_loop_time = 0
         print("IManager super init")
-        super().__init__(nom, arene, username, password, server=server, verbosity=root_config.LOGGING_LEVEL)
+        super().__init__(nom, arene, username, password, server="mqtt.jusdeliens.com",
+                         verbosity=root_config.LOGGING_LEVEL)
         print("IManager done init")
 
     @property
@@ -58,30 +59,20 @@ class IManager(Agent, ABC):
         """
         Define what must be done on each update.
         """
-        pass
 
     ##########################
     # ARENA RULES MANAGEMENT #
     ##########################
 
     @abstractmethod
-    def update_rules(self, rules: Dict[str, Any]) -> None:
-        """
-        Set the rules of the arena.
-        """
-        pass
-
-    @abstractmethod
     def get_rules(self) -> Dict[str, Any]:
         """
         Get the rules applied to the arena.
         """
-        pass
 
     @abstractmethod
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
-        pass
 
     @abstractmethod
     def set_pause(self, pause: bool) -> bool:
@@ -91,14 +82,12 @@ class IManager(Agent, ABC):
         :param pause: True to pause the game, False to resume
         :return: the new pause state applied to the game
         """
-        pass
 
     @abstractmethod
     def set_map(self, map: List[List[int]]) -> bool:
         """
         Set the map of the arena.
         """
-        pass
 
     ############################
     # ARENA PLAYERS MANAGEMENT #
@@ -110,7 +99,6 @@ class IManager(Agent, ABC):
         :param player_id: the id of the player to kill
         :return: the killed player's reference
         """
-        pass
 
     @abstractmethod
     def register_player(self, player: Player) -> Player:
@@ -119,7 +107,6 @@ class IManager(Agent, ABC):
         :param player: the player to register to the arena and spawn
         :return: the registered player's reference
         """
-        pass
 
     @abstractmethod
     def unregister_player(self, player_id: int) -> None:
@@ -127,14 +114,12 @@ class IManager(Agent, ABC):
         Unregister a player. (cannot be undone)
         :param player_id: the id of the player to unregister
         """
-        pass
 
     @abstractmethod
     def update_players(self, *args, **kwargs):
         """
         This method is called when a player connects or disconnects.
         """
-        pass
 
     @abstractmethod
     def update_player_stats(self, player: Player) -> Player:
@@ -143,16 +128,6 @@ class IManager(Agent, ABC):
         :param player: the player to update
         :return: the updated player's reference
         """
-        pass
-
-    @abstractmethod
-    def get_player(self, player_id: Union[int | str]) -> Player:
-        """
-        Get a player.
-        :param player_id: the id of the player to get
-        :return: the player reference if found, None otherwise
-        """
-        pass
 
     @property
     @abstractmethod
@@ -160,14 +135,12 @@ class IManager(Agent, ABC):
         """
         Return the actual state name of the arena.
         """
-        pass
 
     @abstractmethod
     def display(self, text):
         """
         Display a message on the arena.
         """
-        pass
 
     @property
     @abstractmethod
@@ -175,7 +148,6 @@ class IManager(Agent, ABC):
         """
         return True if the game is running
         """
-        pass
 
     def __del__(self):
         self.disconnect()
