@@ -315,5 +315,5 @@ class Gestionnaire(IManager):
 
 
 if __name__ == '__main__':
-    with Gestionnaire("kaliopeaHelios", "minova", "demo", "demo") as gest:
+    with Gestionnaire("...", "...", "...", "...") as gest:
         gest.game_loop()
