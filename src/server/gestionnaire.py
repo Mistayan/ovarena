@@ -5,19 +5,21 @@ Apply the rules of the arena.
 """
 import json
 import logging
+import os
 from copy import deepcopy, copy
 from time import perf_counter
 from typing import List, Dict, Any, Union, Tuple
 
 import root_config
 from src import WaitPlayers, InGame, EndGame
-from src.api.j2l.pyrobotx.client import DefaultClientSettings
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
 from src.server.models import Player
 from src.server.states.base import StateMachine
 from src.server.states.possible_states import StateEnum
 from src.server.states.wait_players_to_connect import WaitPlayersConnexion
+
+__current_dir__ = os.path.dirname(os.path.abspath(__file__))
 
 
 def _init_logger():
@@ -69,9 +71,9 @@ class Gestionnaire(IManager):
         # define the rules of the arena
         self.ruleArena("info", "🔴 Arène en cours de construction ")
         self.update()
-        with open("rules.json", "r", encoding="utf-8") as json_file:
+        with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
             self.__rules = json.load(json_file)
-            self.set_rules(self.__rules)
+            self.update_rules(self.__rules)
         self.__TIME_LIMIT = self.__rules.get("timeLimit")
         self.ruleArena("pause", True)
         self.ruleArena("reset", True)
@@ -148,13 +150,21 @@ class Gestionnaire(IManager):
         print("Game loop started")
         self.__start_time = self.game['t']
         start_time = perf_counter()
-        super().game_loop()
-        game_time = perf_counter() - start_time
-        self._logger.debug(f"Game total time : {game_time//1000}s")
-        self._logger.info(f"Gestionnaire : Game loop ended ! Running : {self.game_loop_running}")
-        self._logger.info(f"Game infos : {self.game_infos}")
 
-    def set_rules(self, rules: Dict[str, Any]) -> None:
+        while self.state != "END_GAME":
+            self._logger.debug(f"Game loop running : {self.game_loop_running} => {self.state}")
+            super().game_loop()
+            self._logger.debug(f"Gestionnaire : Game loop ended ! Running : {self.game_loop_running}")
+            self.__state_machine.handle()
+
+        self._logger.info(f"Game total time : {(int(self.game['t']) - self.__start_time) // 1000}s")
+        self._logger.debug(f"Game infos : {self.game_infos}")
+        self._logger.info("Generating score board...")
+        self.__state_machine.handle()
+        self._logger.info("Score board generated ! Displaying and ending game...")
+        self._logger.debug("leaving game_loop !")
+
+    def update_rules(self, rules: Dict[str, Any]) -> None:
         self._logger.debug("Updating rules to : " % self.__rules)
         self.__rules = rules
         for key, value in rules.items():
@@ -196,8 +206,9 @@ class Gestionnaire(IManager):
             self.__registered_players.append(player)
         return player
 
-    def unregister_player(self, player_id: int) -> None:
+    def unregister_player(self, player_id: str) -> None:
         p = self.get_player(player_id)
+        self.rulePlayer(p.name, "reset", True)
         self.registered_players.remove(p)
 
     def update_player_stats(self, player: Union[int | str]) -> Player:
@@ -282,19 +293,25 @@ class Gestionnaire(IManager):
         self.__state_machine.define_states_links(links)
         self.__state_machine.set_actual_state(initial_state)  # optional, since stateMachine starts at index 0
 
+    def restart(self):
+        self._logger.info("Restarting game...")
+        self.set_pause(True)
+        self.__game_running = False
+        self.__start_time = self.game['t']
+        for player in self.registered_players:
+            self.unregister_player(player.name)
+        self.__state_machine.set_actual_state(StateEnum.WAIT_PLAYERS_CONNEXION)
 
-def input_continue():
-    res = input("Start again ?").lower()
-    if len(res) and res[0] == "y":
-        return True
-    return False
+    def stop(self):
+        self._logger.info("Stopping game...")
+        self.__state_machine.set_actual_state(StateEnum.END_GAME)
+        self.__state_machine.handle()
+
+    def mod_game(self, key: str, value: Any) -> None:
+        self.ruleArena(key, value)
+        self.update()
 
 
 if __name__ == '__main__':
-    DefaultClientSettings.dtSleepUpdate = 175
-    DefaultClientSettings.dtPing = 1000
     with Gestionnaire("...", "...", "...", "...") as gest:
-        _run = True
-        while _run:
-            gest.game_loop()
-            _run = input_continue()
+        gest.game_loop()

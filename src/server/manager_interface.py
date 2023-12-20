@@ -65,7 +65,7 @@ class IManager(Agent, ABC):
     ##########################
 
     @abstractmethod
-    def set_rules(self, rules: Dict[str, Any]) -> None:
+    def update_rules(self, rules: Dict[str, Any]) -> None:
         """
         Set the rules of the arena.
         """
