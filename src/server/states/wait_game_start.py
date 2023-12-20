@@ -27,5 +27,3 @@ class WaitGameStart(WaitPlayers):
         """
         if self._agent.game_loop_running:
             self.switch_state(StateEnum.IN_GAME)
-        if self._agent.all_players_connected:
-            self.switch_state(StateEnum.WAIT_PLAYERS_CONNEXION)
