@@ -82,7 +82,7 @@ class Gestionnaire(IManager):
         with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
             self.__rules = json.load(json_file)
             self.__update_rules(self.__rules)
-        self.__TIME_LIMIT = self.__rules.get("timeLimit")
+        self.__TIME_LIMIT = self.__rules.get("timeLimit")  # todo: change on game rule update
         self.ruleArena("pause", True)
         self.ruleArena("reset", True)
         print("BEFORE", self.game)
@@ -167,7 +167,7 @@ class Gestionnaire(IManager):
             self.__state_machine.handle()
 
         self._logger.info(f"Game total time : {(int(self.game['t']) - self.__start_time) // 1000}s")
-        self._logger.debug(f"Game infos : {self.game_infos}")
+        self._logger.debug(f"Game infos : {self.__game_infos}")
         self._logger.info("Generating score board...")
         self.__state_machine.handle()
         self._logger.info("Score board generated ! Displaying and ending game...")
@@ -193,14 +193,14 @@ class Gestionnaire(IManager):
         # self.update()
         return pause
 
-    def set_map(self, map: List[List[int]]) -> bool:
+    def set_map(self, _map: List[List[int]]) -> bool:
         """
         Set the map of the arena.
-        :param map: the map to set
+        :param _map: the map to set
         """
-        self.ruleArena("map", map)
+        self.ruleArena("map", _map)
         # self.update()
-        if self.get_rules["map"] == map:
+        if self.get_rules["map"] == _map:
             return True
         return False
 
@@ -286,7 +286,7 @@ class Gestionnaire(IManager):
         return self.__state_machine.state
 
     @property
-    def game_infos(self) -> Dict[str, Any]:
+    def __game_infos(self) -> Dict[str, Any]:
         """
         Return the game info dict.
         """

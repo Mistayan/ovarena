@@ -84,7 +84,7 @@ class IManager(Agent, ABC):
         """
 
     @abstractmethod
-    def set_map(self, map: List[List[int]]) -> bool:
+    def set_map(self, _map: List[List[int]]) -> bool:
         """
         Set the map of the arena.
         """
