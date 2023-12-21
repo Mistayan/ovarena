@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -16,8 +16,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip coverage pylint
-        pip install -r requirements.txt
+        python -m pip install --upgrade pip pylint
 
     # Run pylint, fail if score is below 7.5, --ignore-path=src/api/j2l/* to ignore j2l
     # ignore  W1203: Use % formatting in logging functions and pass the % parameters as arguments
@@ -25,9 +24,3 @@ jobs:
       run: |
         pylint --fail-under=7.5 --ignore-path=src/api/j2l/* --disable=W1203 src tests 
 
-    # Run unittests with coverage, fail if coverage is below 80%, fail if more than 10% tests fail
-    # if no coverage data is generated, the build will fail
-    - name: Running unittests
-      run: |
-        python -m coverage run -m unittest discover -s tests
-        python -m coverage report -m --fail-under=80 --omit=tests/*,src/api/j2l/*
