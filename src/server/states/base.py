@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import root_config
 from src.server.manager_interface import IManager
@@ -26,7 +26,6 @@ class IState(ABC):
     @abstractmethod
     def handle(self):
         """ Abstract method to enforce children implementing this"""
-        ...
 
 
 class State(IState, ABC):
@@ -80,7 +79,6 @@ class BaseState(State, ABC):
         all_connected = self._agent.all_players_connected
         ... do stuff with all_connected
         """
-        ...
 
 
 class StateMachine:
@@ -91,9 +89,11 @@ class StateMachine:
     """
 
     def __init__(self, controller: IManager):
+        if not isinstance(controller, IManager):
+            raise TypeError(f"Controller must be a subclass of IManager, got {type(controller)}")
         self.__agent = controller
         self.__actual_state: StateEnum = None
-        self.__states: List[BaseState] = []
+        self.__states: Dict[str, BaseState] = {}
         self._logger = logging.getLogger(self.__class__.__name__)
         self._logger.setLevel(root_config.LOGGING_LEVEL)
         self.__allowed_switches: Tuple[Tuple[StateEnum, StateEnum]] = tuple()
@@ -102,16 +102,16 @@ class StateMachine:
     @property
     def state(self) -> str:
         """ return the actual state name """
-        return self.__states[self.__actual_state.value].name.name
+        return self.__actual_state.name
 
     def __add_state(self, state: BaseState.__class__):
-        self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
         state_object = state(self.__agent)
         state_object.set_context(context=self)
         if not isinstance(state_object, BaseState):
             raise TypeError(f"State {state_object} is not a subclass of BaseState")
-        self.__states.append(state_object)
-        self._logger.debug(f"New state list : {self.__states}")
+        self._logger.debug(f"Adding state {state} at {len(self.__states)} : {state.name}")
+        self.__states.setdefault(state_object.name.name, state_object)
+        self._logger.debug(f"New states dict : {self.__states}")
 
     def __define_states_links(self, connexions: List[Tuple[StateEnum, StateEnum]]):
         """
@@ -140,7 +140,7 @@ class StateMachine:
         """
         self.__lock = True
         self._logger.debug(f'Handling state : {self.__actual_state}')
-        self.__states[self.__actual_state.value].handle()
+        self.__states[self.__actual_state.name].handle()
 
     def __is_allowed(self, new_state: StateEnum) -> bool:
         """
