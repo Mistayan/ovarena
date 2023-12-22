@@ -3,11 +3,12 @@ Game manager of the arena.
 Watch the arena state machine and the arena events.
 Apply the rules of the arena.
 """
+from __future__ import annotations
+
 import json
 import logging
 import os
 from copy import deepcopy, copy
-from time import perf_counter
 from typing import List, Dict, Any, Union
 
 import root_config
@@ -29,7 +30,7 @@ def _init_logger():
     colorama.init()
 
 
-class Gestionnaire(IManager):
+class ArenaManager(IManager):
     """
     This class is the manager of the arena. It handles the arena state machine and the arena events.
     Subclass of Agent that handles the connection to the server,
@@ -88,6 +89,7 @@ class Gestionnaire(IManager):
         self.robot.addEventListener(RobotEvent.robotConnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.updated, self.on_update)
+        self.robot.addEventListener(RobotEvent.playerChanged, self.__state_machine.handle)
         print("AFTER", self.game)
         print("Gestionnaire done init")
 
@@ -154,7 +156,6 @@ class Gestionnaire(IManager):
         """
         print("Game loop started")
         self.__start_time = self.game['t']
-        start_time = perf_counter()
 
         while self.state != "END_GAME":
             self._logger.debug(f"Game loop running : {self.game_loop_running} => {self.state}")
@@ -371,7 +372,7 @@ if __name__ == '__main__':
 
     dotenv.load_dotenv()
     print(os.getenv("USER"))
-    with Gestionnaire(
+    with ArenaManager(
             os.getenv("USER"),
             os.getenv("ARENA"),
             os.getenv("LOGIN"),
