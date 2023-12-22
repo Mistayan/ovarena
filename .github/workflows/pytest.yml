@@ -16,7 +16,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip coverage pytest unittest
+        python -m pip install --upgrade pip coverage pytest
         pip install -r requirements.txt
 
     # Run unittests with coverage, fail if coverage is below 80%, fail if more than 10% tests fail
