@@ -2,5 +2,5 @@
 Server package
 """
 from .manager_interface import IManager
-from .gestionnaire import Gestionnaire
+from .arenamanager import ArenaManager
 from .states import StateMachine, StateEnum, BaseState
