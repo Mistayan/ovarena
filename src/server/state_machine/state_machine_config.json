@@ -1,0 +1,40 @@
+{
+  "states": [
+    "WAIT_PLAYERS_CONNEXION",
+    "WAIT_GAME_START",
+    "WAIT_PLAYERS",
+    "IN_GAME",
+    "END_GAME"
+  ],
+  "links": [
+    [
+      "WAIT_PLAYERS_CONNEXION",
+      "WAIT_GAME_START"
+    ],
+    [
+      "WAIT_GAME_START",
+      "WAIT_PLAYERS_CONNEXION"
+    ],
+    [
+      "WAIT_GAME_START",
+      "IN_GAME"
+    ],
+    [
+      "WAIT_PLAYERS",
+      "IN_GAME"
+    ],
+    [
+      "IN_GAME",
+      "WAIT_PLAYERS"
+    ],
+    [
+      "IN_GAME",
+      "END_GAME"
+    ],
+    [
+      "END_GAME",
+      "WAIT_PLAYERS_CONNEXION"
+    ]
+  ],
+  "initial_state": "WAIT_PLAYERS_CONNEXION"
+}

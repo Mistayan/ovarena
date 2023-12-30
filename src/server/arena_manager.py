@@ -57,18 +57,7 @@ class ArenaManager(IManager):
         self.__map: List[List[int]] = []
         self.__rules: Dict[str, Any] = {}
 
-        self.__state_machine = StateMachine(self).define_states(
-            states=(WaitPlayersConnexion, WaitPlayers, InGame, EndGame, WaitGameStart),
-            links=[
-                (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_GAME_START),
-                (StateEnum.WAIT_GAME_START, StateEnum.WAIT_PLAYERS_CONNEXION),
-                (StateEnum.WAIT_GAME_START, StateEnum.IN_GAME),
-                (StateEnum.WAIT_PLAYERS, StateEnum.IN_GAME),
-                (StateEnum.IN_GAME, StateEnum.WAIT_PLAYERS),
-                (StateEnum.IN_GAME, StateEnum.END_GAME),
-                (StateEnum.END_GAME, StateEnum.WAIT_PLAYERS_CONNEXION)],
-            initial_state=StateEnum.WAIT_PLAYERS_CONNEXION
-        )
+        self.__state_machine = StateMachine(self).define_states(StateMachineConfig())
 
         # define the rules of the arena
         self.ruleArena("info", "🔴 Arène en cours de construction ")
@@ -86,7 +75,7 @@ class ArenaManager(IManager):
         self.robot.addEventListener(RobotEvent.robotConnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
         self.robot.addEventListener(RobotEvent.updated, self.on_update)
-        self.robot.addEventListener(RobotEvent.playerChanged, self.__state_machine.handle)
+        self.robot.addEventListener(RobotEvent.playerChanged, self.update_players)
         print("AFTER", self.game)
         print("Gestionnaire done init")
 
