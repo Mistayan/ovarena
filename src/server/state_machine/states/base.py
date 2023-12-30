@@ -32,7 +32,10 @@ class State(IState, ABC):
     Base State class.
     defines standard actions for specific children states
     """
-    __context: StateMachine
+
+    def __init__(self):
+        super().__init__()
+        self.__context = None
 
     @property
     @abstractmethod
@@ -43,8 +46,11 @@ class State(IState, ABC):
         """
         raise NotImplementedError
 
-    def set_context(self, context: StateMachine):
-        self.__context = context
+    def set_context(self, state_machine):
+        # from src.server.state_machine.state_machine import StateMachine
+        # if not isinstance(StateMachine.__class__, state_machine.__class__):
+        #     raise TypeError(f"Context must be a subclass of StateMachine, got {type(state_machine)}")
+        self.__context = state_machine
 
     def switch_state(self, state: StateEnum):
         self.__context.set_actual_state(state)
