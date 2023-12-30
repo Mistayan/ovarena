@@ -15,14 +15,11 @@ import root_config
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
 from src.server.models import Player
-from src.server.states.base import StateMachine
-from src.server.states.possible_states import StateEnum
+from src.server.state_machine import StateMachine, StateMachineConfig
+from src.server.state_machine.states.possible_states import StateEnum
 
 __current_dir__ = os.path.dirname(os.path.abspath(__file__))
 
-from src.server.states import WaitGameStart, WaitPlayers, InGame, EndGame
-
-from src.server.states.wait_players_to_connect import WaitPlayersConnexion
 
 
 def _init_logger():

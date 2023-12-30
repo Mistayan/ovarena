@@ -2,13 +2,13 @@ from unittest import mock
 
 import pytest
 
-from src import StateEnum, WaitGameStart, InGame
-from src.server import ArenaManager
-from src.server.states import StateMachine
-from src.server.states.wait_players_to_connect import WaitPlayersConnexion
+from src.server import StateMachine
+from src.server.arena_manager import ArenaManager
+from src.server.state_machine.states import StateEnum, WaitGameStart, WaitPlayersConnexion
+from src.server.state_machine import StateMachineConfig
 
 
-class TestStateMachine:
+class TestStateMachine(unittest.TestCase):
 
     def test_init_no_manager_fail(self):
         # If i do not provide a manager, the state machine should fail

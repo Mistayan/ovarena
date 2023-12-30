@@ -5,11 +5,11 @@ Handles the game ending operations
 
 from __future__ import annotations
 
-from src.server.states.base import BaseState
-from src.server.states.possible_states import StateEnum
+from .base import GameState
+from .possible_states import StateEnum
 
 
-class EndGame(BaseState):
+class EndGame(GameState):
     """
     Game just ended
     Pause game

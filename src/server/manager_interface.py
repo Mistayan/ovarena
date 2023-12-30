@@ -5,11 +5,11 @@ This class defines the actions a Manager can do on the game.
 
 from abc import ABC, abstractmethod
 from time import sleep, perf_counter
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List
 
 import root_config
 from src.api.j2l.pytactx.agent import Agent
-from src.server.models import Player
+from .models import Player
 
 
 class IManager(Agent, ABC):

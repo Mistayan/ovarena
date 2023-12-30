@@ -5,11 +5,11 @@ Handles the game operations
 
 from __future__ import annotations
 
-from src.server.states.base import BaseState
-from src.server.states.possible_states import StateEnum
+from .base import GameState
+from .possible_states import StateEnum
 
 
-class InGame(BaseState):
+class InGame(GameState):
     """
     Game just started and is running
     This state handles the game operations

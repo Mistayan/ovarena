@@ -2,14 +2,11 @@
 State class for the state machine
 Handles waiting for players to connect to the arena
 """
-
-from __future__ import annotations
-
-from src.server.states.base import BaseState
-from src.server.states.possible_states import StateEnum
+from .base import GameState
+from .possible_states import StateEnum
 
 
-class WaitPlayers(BaseState):
+class WaitPlayers(GameState):
     """
     Wait for all players to connect to the arena
     therefor, the game is paused if not all players are connected
