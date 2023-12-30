@@ -88,8 +88,9 @@ class TestStateMachine(unittest.TestCase):
         manager.players = []
         sm = StateMachine(manager)
         smc = StateMachineConfig()
-        smc.states = (WaitPlayersConnexion, WaitGameStart, "bad_state")
+
         with pytest.raises(TypeError):
+            smc.states = (WaitPlayersConnexion, WaitGameStart, "bad_state")
             sm.define_states(smc)
 
     def test_request_bad_state_switch(self):
@@ -287,5 +288,6 @@ class TestStateMachine(unittest.TestCase):
         sm.handle()
         assert sm.state == StateEnum.IN_GAME.name
         manager.game_loop_running.return_value = False
+        sm.handle()
         sm.handle()
         assert sm.state == StateEnum.END_GAME.name

@@ -180,6 +180,16 @@ class StateMachineConfig:
         """
         return tuple(self.__states)
 
+    @states.setter
+    def states(self, states: list):
+        """
+        Set the states
+        """
+        for s in states:
+            if not issubclass(s, GameState):
+                raise TypeError(f"State {s} is not a subclass of GameState")
+        self.__set_states(states)
+
     @property
     def links(self):
         """
@@ -187,12 +197,31 @@ class StateMachineConfig:
         """
         return list(self.__links)
 
+    @links.setter
+    def links(self, links: list):
+        """
+        Set the links between states
+        """
+        for lnk1, lnk2 in links:
+            if not isinstance(lnk1, StateEnum) or not isinstance(lnk2, StateEnum):
+                raise TypeError(f"Link {lnk1} -> {lnk2} is not a tuple of StateEnum")
+        self.__set_links(links)
+
     @property
     def initial_state(self):
         """
         Return the initial state as a string
         """
         return self.__initial_state
+
+    @initial_state.setter
+    def initial_state(self, initial_state: str):
+        """
+        Set the initial state
+        """
+        if not isinstance(initial_state, str):
+            raise TypeError(f"Initial state {initial_state} is not a string")
+        self.__set_initial_state(initial_state)
 
     def __set_states(self, states: list) -> list:
         """
