@@ -64,12 +64,14 @@ class IManager(Agent, ABC):
     # ARENA RULES MANAGEMENT #
     ##########################
 
+    @property
     @abstractmethod
     def get_rules(self) -> Dict[str, Any]:
         """
         Get the rules applied to the arena.
         """
 
+    @property
     @abstractmethod
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
@@ -137,7 +139,7 @@ class IManager(Agent, ABC):
         """
 
     @abstractmethod
-    def display(self, text):
+    def display(self, message):
         """
         Display a message on the arena.
         """

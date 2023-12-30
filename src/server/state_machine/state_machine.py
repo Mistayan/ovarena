@@ -1,3 +1,12 @@
+"""
+State machine class.
+It defines the states and the links between them.
+When requesting to change state, it checks if the state is allowed
+ to switch to the new state.
+This is the main class of the state machine.
+It uses the StateMachineConfig class to load the configuration from
+ state_machine_config.json file.
+"""
 from __future__ import annotations
 
 import json
@@ -12,9 +21,13 @@ from src.server.state_machine.states import StateEnum, GameState
 
 
 def dynamic_imp(package_name, class_name):
+    """
     # find_module() method is used
     # to find the module and return
     # its description and path
+    if found, otherwise
+    # raise ImportError and return (None, None)
+    """
     myclass = None
     package = None
     try:
@@ -35,6 +48,9 @@ class StateMachine:
     """
 
     def __init__(self, controller: IManager):
+        """
+        Initialize the state machine
+        """
         if not isinstance(controller, IManager):
             raise TypeError(f"Controller must be a subclass of IManager, got {type(controller)}")
         self.__agent = controller
@@ -159,14 +175,23 @@ class StateMachineConfig:
 
     @property
     def states(self):
+        """
+        Return the states as a tuple
+        """
         return tuple(self.__states)
 
     @property
     def links(self):
+        """
+        Return the links between states as a list of tuples
+        """
         return list(self.__links)
 
     @property
     def initial_state(self):
+        """
+        Return the initial state as a string
+        """
         return self.__initial_state
 
     def __set_states(self, states: list) -> list:
@@ -178,7 +203,7 @@ class StateMachineConfig:
             # import class from src.server.state_machine.states
             class_name = "".join([x.capitalize() for x in enum_name.split("_")])
             self.__logger.debug(f"Importing {class_name}")
-            mod, state_class = dynamic_imp(f"src.server.state_machine.states", class_name)
+            mod, state_class = dynamic_imp("src.server.state_machine.states", class_name)
             if not state_class or not mod or not issubclass(state_class, GameState):
                 raise ValueError(f"State {class_name} not found")
             self.__states.append(state_class)
@@ -201,7 +226,6 @@ class StateMachineConfig:
         Set the initial state
         """
         # import enum, then load the enum value from the string
-        from src.server.state_machine.states.possible_states import StateEnum
         self.__logger.debug(f"Setting initial state to {initial_state}")
         self.__initial_state = StateEnum[initial_state]
 

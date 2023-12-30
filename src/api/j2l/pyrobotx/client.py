@@ -11,12 +11,13 @@
 # Under CC BY-NC-ND 3.0 licence 
 # https://creativecommons.org/licenses/by-nc-nd/3.0/ 
 
-# Allow import without error 
+import os
+# Allow import without error
 # "relative import with no known parent package"
-# In vscode, add .env file with PYTHONPATH="..." 
+# In vscode, add .env file with PYTHONPATH="..."
 # with the same dir to allow intellisense
 import sys
-import os
+
 __workdir__ = os.path.dirname(os.path.abspath(__file__))
 __libdir__ = os.path.dirname(__workdir__)
 sys.path.append(__libdir__)

@@ -3,8 +3,10 @@ States Package
 Contains all available States and their connections
 """
 
-__name__ = "states"
-__export__ = ["BaseState", "StateEnum", "EndGame", "InGame", "WaitGameStart", "WaitPlayers", "WaitPlayersConnexion"]
+__export__ = [
+    "BaseState", "StateEnum", "EndGame", "InGame",
+    "WaitGameStart", "WaitPlayers", "WaitPlayersConnexion"
+]
 
 from .base import State, GameState, StateEnum
 from .end_game import EndGame

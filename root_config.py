@@ -11,8 +11,8 @@ __workdir__ = os.path.dirname(os.path.abspath(__file__))
 __rootdir__ = os.path.dirname(__workdir__)
 colorama.init()
 
-global LOGGING_LEVEL
-global ROOT_LOGGER
+LOGGING_LEVEL = logging.INFO
+ROOT_LOGGER = None
 
 
 def __setup():

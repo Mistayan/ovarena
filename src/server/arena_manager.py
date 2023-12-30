@@ -11,6 +11,8 @@ import os
 from copy import deepcopy, copy
 from typing import List, Dict, Any, Union
 
+import colorama
+
 import root_config
 from src.api.j2l.pyrobotx.robot import RobotEvent
 from src.server.manager_interface import IManager
@@ -21,9 +23,7 @@ from src.server.state_machine.states.possible_states import StateEnum
 __current_dir__ = os.path.dirname(os.path.abspath(__file__))
 
 
-
 def _init_logger():
-    import colorama
     colorama.init()
 
 
@@ -54,7 +54,7 @@ class ArenaManager(IManager):
         self._robot = super().__init__(nom, arene, username, password)
         _init_logger()
         # define variables to retain information about the game
-        self.__map: List[List[int]] = []
+        # self.__map: List[List[int]] = []
         self.__rules: Dict[str, Any] = {}
 
         self.__state_machine = StateMachine(self).define_states(StateMachineConfig())
@@ -65,7 +65,7 @@ class ArenaManager(IManager):
         with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
             self.__rules = json.load(json_file)
             self.__update_rules(self.__rules)
-        self.__TIME_LIMIT = self.__rules.get("timeLimit")  # todo: change on game rule update
+        self.__time_limit = self.__rules.get("timeLimit")  # todo: change on game rule update
         self.ruleArena("pause", True)
         self.ruleArena("reset", True)
         print("BEFORE", self.game)
@@ -109,7 +109,7 @@ class ArenaManager(IManager):
         """
         Return False if the game time is elapsed.
         """
-        return self.game["t"] <= self.__start_time + self.__paused_time + self.__TIME_LIMIT
+        return self.game["t"] <= self.__start_time + self.__paused_time + self.__time_limit
 
     @property
     def game_loop_running(self) -> bool:
@@ -130,10 +130,16 @@ class ArenaManager(IManager):
 
     @property
     def get_rules(self) -> Dict[str, Any]:
+        """
+        Get the rules applied to the arena.
+        """
         return deepcopy(self.__rules)
 
     @property
     def registered_players(self) -> List[Player]:
+        """
+        Return the copy of the list of registered players.
+        """
         return copy(self.__registered_players)
 
     def game_loop(self):
@@ -197,6 +203,7 @@ class ArenaManager(IManager):
                     or isinstance(player_id, str) and player.name == player_id:
                 self._logger.debug(f"Found player {player.name} in registered players")
                 return player
+        return None
 
     def kill_player(self, player_id: int) -> Player:
         """

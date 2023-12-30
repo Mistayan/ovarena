@@ -19,6 +19,10 @@ class InGame(GameState):
         - handle game events
     """
 
+    def __init__(self, agent):
+        super().__init__(agent)
+        self.__loop_start_time = 0
+
     @property
     def name(self) -> StateEnum:
         return StateEnum.IN_GAME
@@ -31,11 +35,11 @@ class InGame(GameState):
         Handle the game operations
         """
         if not self._agent.all_players_connected:
-            return self.switch_state(StateEnum.WAIT_PLAYERS)
-        elif not self._agent.game_loop_running:
-            return self.switch_state(StateEnum.END_GAME)
-        elif self._agent.game["pause"]:
-            return self.__unpause()
+            self.switch_state(StateEnum.WAIT_PLAYERS)
+        if not self._agent.game_loop_running:
+            self.switch_state(StateEnum.END_GAME)
+        if self._agent.game["pause"]:
+            self.__unpause()
         self.__update()
 
     def __unpause(self):

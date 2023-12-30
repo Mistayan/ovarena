@@ -12,8 +12,8 @@ import logging
 from abc import ABC, abstractmethod
 
 import root_config
-from .possible_states import StateEnum
 from src.server.manager_interface import IManager
+from .possible_states import StateEnum
 
 
 class IState(ABC):
@@ -21,6 +21,15 @@ class IState(ABC):
     An IFace is an empty shell.
      Its only purpose is to define a standard structure for every children
       """
+
+    @property
+    @abstractmethod
+    def name(self) -> StateEnum:
+        """
+        Return the Enum value of the state
+        this should be implemented as a property
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def handle(self):
@@ -34,25 +43,23 @@ class State(IState, ABC):
     """
 
     def __init__(self):
+        """
+        Initialize the state
+        """
         super().__init__()
         self.__context = None
 
-    @property
-    @abstractmethod
-    def name(self) -> StateEnum:
-        """
-        Return the Enum value of the state
-        this should be implemented as a property
-        """
-        raise NotImplementedError
-
     def set_context(self, state_machine):
-        # from src.server.state_machine.state_machine import StateMachine
-        # if not isinstance(StateMachine.__class__, state_machine.__class__):
-        #     raise TypeError(f"Context must be a subclass of StateMachine, got {type(state_machine)}")
+        """
+        define the context of the state, that is the state machine
+        """
         self.__context = state_machine
 
     def switch_state(self, state: StateEnum):
+        """
+        Asks the context to switch to the given state,
+        if the switch is allowed
+        """
         self.__context.set_actual_state(state)
 
 
