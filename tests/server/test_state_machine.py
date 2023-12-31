@@ -227,9 +227,12 @@ class TestStateMachine(unittest.TestCase):
         manager = mock.Mock(ArenaManager)
         manager.players = ["player1", "player2"]
         manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 50000}
+        # when manager.set_pause is called, set manager.game["pause"] to True/False
+        manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
         sm = StateMachine(manager)
         sm.define_states(StateMachineConfig())
 
+        # when i handle the state machine, it registers the players
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
         sm.handle()
@@ -248,18 +251,43 @@ class TestStateMachine(unittest.TestCase):
          switch to the WaitPlayers state
         """
         manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
+        manager.players = ["player1"]
+        manager.registered_players = []
+        manager.all_players_connected = False
+        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 50000, "nbPlayers":2}
+        # when manager.register_player is called, set manager.players to specified value
+        manager.register_player.side_effect = lambda player: manager.registered_players.append(player)
+        manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
         sm = StateMachine(manager)
         sm.define_states(StateMachineConfig())
 
+        # when i handle the state machine,
+        # it registers the player 1 and wait for more players
         sm.handle()
+        manager.register_player.assert_called_once()
+        assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
+        # player 2 connects
+        manager.players = ["player1", "player2"]
+        manager.all_players_connected = True
         manager.register_player.assert_called()
+        # and switch to the wait game start state
+        sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
 
-        manager.players = ["player1"]
-        manager.all_players_connected.return_value = False
+        # When all players are connected, the state machine should
+        manager.game_loop_running = True
         sm.handle()
+        # switch to the InGame state
+        assert sm.state == StateEnum.IN_GAME.name
+
+        # When a player disconnects, the state machine should
+        manager.players = ["player1"]
+        manager.all_players_connected = False
+        sm.handle()
+        # switch to the WaitPlayers state
         assert sm.state == StateEnum.WAIT_PLAYERS.name
+        sm.handle()
+        assert manager.game["pause"] is True
 
     def test_end_game(self):
         """
@@ -271,11 +299,12 @@ class TestStateMachine(unittest.TestCase):
         # given the fact that i am in the InGame state,
          i should be able to handle the game
         # given the fact that i am in the InGame state,
-         i should be able to pause the game
+         i should be able to end the game
         """
         manager = mock.Mock(ArenaManager)
         manager.players = ["player1", "player2"]
-        manager.game = {"pause": False, "timeElapsed": 0, "timeLimit": 0}
+        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 0}
+        manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
 
         sm = StateMachine(manager)
         sm.define_states(StateMachineConfig())
@@ -283,11 +312,13 @@ class TestStateMachine(unittest.TestCase):
         assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
-        manager.game_loop_running.return_value = True
-        manager.all_players_connected.return_value = True
+        manager.game_loop_running = True
+        manager.all_players_connected = True
         sm.handle()
         assert sm.state == StateEnum.IN_GAME.name
-        manager.game_loop_running.return_value = False
-        sm.handle()
+        manager.game_loop_running = False
         sm.handle()
         assert sm.state == StateEnum.END_GAME.name
+        # then, EndGame state should put the game in pause and display the end game message
+        sm.handle()
+        assert manager.game["pause"] is True
