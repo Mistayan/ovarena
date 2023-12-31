@@ -124,7 +124,8 @@ class StateMachine:
         if self.__actual_state is None:
             return True
         for state_from, state_to in self.__allowed_switches:
-            self._logger.debug(f"Checking from state : {str(state_from.name)} to {str(state_to.name)}")
+            self._logger.debug(f"Checking from state :"
+                               f" {str(state_from.name)} to {str(state_to.name)}")
             if (self.__actual_state and
                     state_from.name == self.__actual_state.name and
                     state_to.name == new_state.name):
@@ -212,7 +213,8 @@ class StateMachineConfig:
         Set the links between states
         """
         for lnk1, lnk2 in links:
-            if not isinstance(StateEnum[lnk1], StateEnum) or not isinstance(StateEnum[lnk2], StateEnum):
+            if (not isinstance(StateEnum[lnk1], StateEnum)
+                    or not isinstance(StateEnum[lnk2], StateEnum)):
                 raise TypeError(f"Link {lnk1} -> {lnk2} is not a valid tuple of StateEnum")
         self.__set_links(links)
 

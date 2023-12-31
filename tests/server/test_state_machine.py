@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 
-from src.server import StateMachine, Base
+from src.server import StateMachine
 from src.server.arena_manager import ArenaManager
 from src.server.state_machine import StateMachineConfig
 from src.server.state_machine.states import StateEnum, WaitGameStart, WaitPlayersConnexion
@@ -398,6 +398,7 @@ class TestStateMachine(unittest.TestCase):
         assert (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_GAME_START) in smc.links
 
     def test_locked_state_machine(self):
+        """ Test locked state machine """
         controller = mock.Mock(ArenaManager)
         state_machine = StateMachine(controller)
         state_machine._StateMachine__lock = True  # Simulate locked state machine
@@ -405,24 +406,28 @@ class TestStateMachine(unittest.TestCase):
             state_machine.define_states(StateMachineConfig())
 
     def test_invalid_state_class(self):
+        """ Test invalid state class"""
         config = StateMachineConfig()
         with self.assertRaises(TypeError):
             with self.assertRaises(KeyError):
                 config.states = ["A", "B", "C"]  # Invalid state class
 
     def test_invalid_links_type(self):
+        """ Test invalid links type """
         config = StateMachineConfig()
         invalid_links = [("State1", "State2"), ("State3", "State4")]  # Invalid links format
         with self.assertRaises(KeyError):
             config.links = invalid_links
 
     def test_invalid_initial_state_type(self):
+        """ Test invalid initial state type """
         config = StateMachineConfig()
         invalid_initial_state = 123  # Invalid initial state type
         with self.assertRaises(TypeError):
             config.initial_state = invalid_initial_state
 
     def test_base_state(self):
+        """ Test Base class """
         from src.server.state_machine.states.base import GameState
         with self.assertRaises(TypeError):
             GameState(None)
@@ -430,5 +435,8 @@ class TestStateMachine(unittest.TestCase):
             GameState(mock.Mock(ArenaManager)).name
 
     def test_state_enum(self):
+        """
+        Test StateEnum class
+        """
         with self.assertRaises(ValueError):
             StateEnum(None)

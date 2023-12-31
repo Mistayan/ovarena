@@ -65,7 +65,7 @@ class ArenaManager(IManager):
         with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
             self.__rules = json.load(json_file)
             self.__update_rules(self.__rules)
-        self.__time_limit = self.__rules.get("timeLimit")  # todo: change on game rule update
+        self.__time_limit = self.__rules.get("timeLimit")
         self.ruleArena("pause", True)
         self.ruleArena("reset", True)
         print("BEFORE", self.game)
