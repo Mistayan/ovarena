@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 
-from src.server import StateMachine
+from src.server import StateMachine, Base
 from src.server.arena_manager import ArenaManager
 from src.server.state_machine import StateMachineConfig
 from src.server.state_machine.states import StateEnum, WaitGameStart, WaitPlayersConnexion
@@ -254,7 +254,7 @@ class TestStateMachine(unittest.TestCase):
         manager.players = ["player1"]
         manager.registered_players = []
         manager.all_players_connected = False
-        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 50000, "nbPlayers":2}
+        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 50000, "nbPlayers": 2}
         # when manager.register_player is called, set manager.players to specified value
         manager.register_player.side_effect = lambda player: manager.registered_players.append(player)
         manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
@@ -322,3 +322,113 @@ class TestStateMachine(unittest.TestCase):
         # then, EndGame state should put the game in pause and display the end game message
         sm.handle()
         assert manager.game["pause"] is True
+
+    def test_state_machine_config_0(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        assert smc is not None
+        assert smc.states is not None
+        assert smc.links is not None
+        assert smc.initial_state is not None
+        with pytest.raises(TypeError):
+            smc.states = [None]
+
+    def test_state_machine_config_1(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        with pytest.raises(TypeError):
+            smc.states = [WaitGameStart, WaitPlayersConnexion]
+
+    def test_state_machine_config_2(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        with pytest.raises(TypeError):
+            smc.links = [None]
+
+    def test_state_machine_config_3(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        with pytest.raises(KeyError):
+            smc.links = [(None, None)]
+
+    def test_state_machine_config_4(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        with pytest.raises(ValueError):
+            smc.links = [("state", None, None)]
+
+    def test_state_machine_config_5(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        with pytest.raises(KeyError):
+            smc.links = [("state", "state")]
+
+    def test_state_machine_config_6(self):
+        """
+        # Given a state machine config
+        # When i load the config from a file
+        # Then i should have a state machine config
+        """
+        smc = StateMachineConfig()
+        smc.links = [("WAIT_PLAYERS_CONNEXION", "WAIT_GAME_START")]
+        assert (StateEnum.WAIT_PLAYERS_CONNEXION, StateEnum.WAIT_GAME_START) in smc.links
+
+    def test_locked_state_machine(self):
+        controller = mock.Mock(ArenaManager)
+        state_machine = StateMachine(controller)
+        state_machine._StateMachine__lock = True  # Simulate locked state machine
+        with self.assertRaises(RuntimeError):
+            state_machine.define_states(StateMachineConfig())
+
+    def test_invalid_state_class(self):
+        config = StateMachineConfig()
+        with self.assertRaises(TypeError):
+            with self.assertRaises(KeyError):
+                config.states = ["A", "B", "C"]  # Invalid state class
+
+    def test_invalid_links_type(self):
+        config = StateMachineConfig()
+        invalid_links = [("State1", "State2"), ("State3", "State4")]  # Invalid links format
+        with self.assertRaises(KeyError):
+            config.links = invalid_links
+
+    def test_invalid_initial_state_type(self):
+        config = StateMachineConfig()
+        invalid_initial_state = 123  # Invalid initial state type
+        with self.assertRaises(TypeError):
+            config.initial_state = invalid_initial_state
+
+    def test_base_state(self):
+        from src.server.state_machine.states.base import GameState
+        with self.assertRaises(TypeError):
+            GameState(None)
+        with self.assertRaises(TypeError):
+            GameState(mock.Mock(ArenaManager)).name
+
+    def test_state_enum(self):
+        with self.assertRaises(ValueError):
+            StateEnum(None)

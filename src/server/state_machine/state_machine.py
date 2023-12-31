@@ -140,13 +140,20 @@ class StateMachine:
         """
         if self.__lock:
             raise RuntimeError("State machine is locked, cannot define states")
+        if not isinstance(config, StateMachineConfig):
+            raise TypeError("Config must be an instance of StateMachineConfig")
+
         for s in config.states:
+            if not issubclass(s, GameState):
+                raise ValueError(f"State {s} is not a subclass of GameState")
             self.__add_state(s(self.__agent))
-        self._logger.debug(f"New states dict : {self.__states}")
+
         self.__define_states_links(config.links)
         init_state = config.initial_state
-        if init_state:
-            self.set_actual_state(StateEnum(init_state))
+        if init_state and not isinstance(init_state, StateEnum):
+            raise TypeError("Initial state must be an instance of StateEnum")
+
+        self.set_actual_state(StateEnum(init_state))
         return self
 
 
@@ -155,10 +162,12 @@ class StateMachineConfig:
     Define the configuration of the state machine
     """
 
-    def __init__(self):
+    def __init__(self, path=None):
         """
         Load the configuration from the config.json file
         """
+        if path is None or not isinstance(path, str):
+            path = "state_machine_config.json"
         self.__states = []
         self.__links = []
         self.__initial_state = ""
@@ -166,7 +175,7 @@ class StateMachineConfig:
         self.__logger.setLevel(root_config.LOGGING_LEVEL)
         self.__logger.debug("Loading state machine configuration")
         file_dir = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(file_dir, "state_machine_config.json"), "r", encoding="utf-8") as f:
+        with open(os.path.join(file_dir, path), "r", encoding="utf-8") as f:
             config = json.load(f)
 
         self.__set_states(config["states"])
@@ -186,7 +195,7 @@ class StateMachineConfig:
         Set the states
         """
         for s in states:
-            if not issubclass(s, GameState):
+            if not isinstance(GameState.__class__, s):
                 raise TypeError(f"State {s} is not a subclass of GameState")
         self.__set_states(states)
 
@@ -203,8 +212,8 @@ class StateMachineConfig:
         Set the links between states
         """
         for lnk1, lnk2 in links:
-            if not isinstance(lnk1, StateEnum) or not isinstance(lnk2, StateEnum):
-                raise TypeError(f"Link {lnk1} -> {lnk2} is not a tuple of StateEnum")
+            if not isinstance(StateEnum[lnk1], StateEnum) or not isinstance(StateEnum[lnk2], StateEnum):
+                raise TypeError(f"Link {lnk1} -> {lnk2} is not a valid tuple of StateEnum")
         self.__set_links(links)
 
     @property
@@ -220,7 +229,7 @@ class StateMachineConfig:
         Set the initial state
         """
         if not isinstance(initial_state, str):
-            raise TypeError(f"Initial state {initial_state} is not a string")
+            raise TypeError("Initial state must be a string")
         self.__set_initial_state(initial_state)
 
     def __set_states(self, states: list) -> list:
@@ -257,27 +266,3 @@ class StateMachineConfig:
         # import enum, then load the enum value from the string
         self.__logger.debug(f"Setting initial state to {initial_state}")
         self.__initial_state = StateEnum[initial_state]
-
-
-if __name__ == '__main__':
-    from unittest.mock import Mock
-    from src.server.arena_manager import ArenaManager
-
-    # from src.server.state_machine.states import StateEnum, BaseState
-
-    smc = StateMachineConfig()
-    print(smc.states)
-    print(smc.links)
-    print(smc.initial_state)
-    manager = Mock(ArenaManager)
-    manager.players = ["p1", "p2"]
-    sm = StateMachine(manager)
-    sm.define_states(smc)
-    print(sm.state)
-    assert sm.state == "WAIT_PLAYERS_CONNEXION"
-    sm.handle()
-    print(sm.state)
-    assert sm.state == "WAIT_GAME_START"
-    sm.handle()
-    print(sm.state)
-    assert sm.state == "IN_GAME"
