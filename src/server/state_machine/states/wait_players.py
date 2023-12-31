@@ -35,8 +35,8 @@ class WaitPlayers(GameState):
         Wait for all players to connect
         pause the game and display "waiting for players"
         """
-        self._agent.ruleArena("pause", True)
-        self._agent.ruleArena("info", "En attente de reconnection des joueurs...")
+        self._agent.set_pause(True)
+        self._agent.display("En attente de reconnection des joueurs...")
         # self._agent.update()
 
     def __start_game(self):

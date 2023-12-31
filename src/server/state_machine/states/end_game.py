@@ -24,8 +24,8 @@ class EndGame(GameState):
         """
         Pause the game and process the results
         """
-        self._agent.ruleArena("pause", True)
-        self._agent.ruleArena("info", "🟢 Fin de la partie, traitement des résultats...")
+        self._agent.set_pause(True)
+        self._agent.display("🟢 Fin de la partie, traitement des résultats...")
         # self._agent.update()
 
         ## TODO: process results

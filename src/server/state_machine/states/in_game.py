@@ -34,12 +34,12 @@ class InGame(GameState):
         If the game is over, switch to the EndGame state
         Handle the game operations
         """
+        if self._agent.game["pause"]:
+            self.__unpause()
         if not self._agent.all_players_connected:
             self.switch_state(StateEnum.WAIT_PLAYERS)
         if not self._agent.game_loop_running:
             self.switch_state(StateEnum.END_GAME)
-        if self._agent.game["pause"]:
-            self.__unpause()
         self.__update()
 
     def __unpause(self):
@@ -71,4 +71,4 @@ class InGame(GameState):
             self._agent.display(f"🟢 {self.__loop_start_time // 6000} minutes écoulées")
         self.__handle_players_events()
         self.__handle_game_events()
-        self._agent.update()
+        # self._agent.update()
