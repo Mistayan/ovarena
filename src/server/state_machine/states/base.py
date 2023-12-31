@@ -29,7 +29,6 @@ class IState(ABC):
         Return the Enum value of the state
         this should be implemented as a property
         """
-        raise NotImplementedError
 
     @abstractmethod
     def handle(self):
