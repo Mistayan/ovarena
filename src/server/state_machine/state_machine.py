@@ -34,9 +34,9 @@ def dynamic_imp(package_name, class_name):
         package = import_module(package_name)
         myclass = getattr(package, class_name)
     except ImportError as e:
-        print(e)
+        logging.error(e)
     finally:
-        print(package, myclass)
+        logging.debug(package, myclass)
     return package, myclass
 
 
@@ -85,7 +85,7 @@ class StateMachine:
         ( (state_from, state_to), (...) )
         """
         for connexion in connexions:
-            print(connexion)
+            self._logger.debug(connexion)
             if not isinstance(connexion, tuple):
                 raise TypeError(f"Connexion {connexion} is not a tuple")
             if len(connexion) != 2:
