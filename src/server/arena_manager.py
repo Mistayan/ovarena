@@ -353,6 +353,8 @@ class ArenaManager(IManager):
         """
         set the game key to the given value
         """
+        self.__rules.update({key: value})
+        self.__update_rules(self.__rules)
         self._robot.ruleArena(key, value)
         self._robot.update()
 
