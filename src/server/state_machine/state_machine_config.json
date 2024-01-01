@@ -12,6 +12,10 @@
       "WAIT_GAME_START"
     ],
     [
+      "WAIT_PLAYERS_CONNEXION",
+      "WAIT_PLAYERS_CONNEXION"
+    ],
+    [
       "WAIT_GAME_START",
       "WAIT_PLAYERS_CONNEXION"
     ],
