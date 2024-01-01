@@ -93,10 +93,11 @@ class ArenaManager(IManager):
         """
         Return True if all players are dead.
         """
+        alive = 0
         for player in self.registered_players:
             if player.health > 0:
-                return False
-        return True
+                alive += 1
+        return alive == 0
 
     @property
     def __timer_running(self) -> bool:
@@ -111,7 +112,7 @@ class ArenaManager(IManager):
         """
         Return True if the game time is elapsed or all players are dead.
         """
-        return self.__timer_running or self.__all_players_dead
+        return self.__timer_running and not self.__all_players_dead
 
     @property
     def all_players_connected(self) -> bool:
