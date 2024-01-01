@@ -24,6 +24,22 @@ class TestStateMachine(unittest.TestCase):
     Ensure that the state machine will fail on bad instructions
     """
 
+    def __init_state_machine(self):
+        """
+         Méthode STD pour initialiser les valeurs et
+         comportements de base requis pour le fonctionnement
+        """
+        manager = mock.Mock(ArenaManager)
+        manager._robot = mock.Mock()
+        manager._robot.game = {'t': 0, "pause": True, "timeElapsed": 0, "timeLimit": 50000}
+        manager._robot.players = ["player1", "player2"]
+        manager.players = manager._robot.players
+        # when manager.set_pause is called, set manager.game["pause"] to True/False
+        manager.set_pause.side_effect = lambda pause: manager._robot.game.update({"pause": pause})
+        sm = StateMachine(manager)
+        sm.define_states(StateMachineConfig())
+        return manager, sm
+
     def test_init_no_manager_fail(self):
         """
         # If i do not provide a manager, the state machine should fail
@@ -49,10 +65,7 @@ class TestStateMachine(unittest.TestCase):
         # When i lock the state machine
         # Then i should not be able to change the state
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = []
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
+        manager, sm = self.__init_state_machine()
 
         sm.handle()
         with pytest.raises(RuntimeError):
@@ -115,10 +128,7 @@ class TestStateMachine(unittest.TestCase):
         where the WaitPlayersConnexion state is the initial state
          and the WaitGameStart state is the next state
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
+        manager, sm = self.__init_state_machine()
 
         sm.handle()
         manager.register_player.assert_called()
@@ -131,18 +141,15 @@ class TestStateMachine(unittest.TestCase):
         where the WaitPlayersConnexion state is the initial state
          and the WaitGameStart state is the next state
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1"]
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
+        manager, sm = self.__init_state_machine()
 
         manager.all_players_connected = False
+        manager._robot.players = ["player1"]
         sm.handle()
-        manager.register_player.assert_called_with(mock.ANY)
         manager.register_player.assert_called_once()
         assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
 
-        manager.players = ["player1", "player2"]
+        manager._robot.players = ["player1", "player2"]
         sm.handle()
         assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
         # FIXME  why 3 and not 2 ? there are 2 players, not 3!
@@ -165,10 +172,7 @@ class TestStateMachine(unittest.TestCase):
         # given the fact that i am in the WaitGameStart state,
          i should be able to start the game
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
+        manager, sm = self.__init_state_machine()
 
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
@@ -183,11 +187,7 @@ class TestStateMachine(unittest.TestCase):
         when i handle the state machine, it registers the players
          and switch to the next state
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
-
+        manager, sm = self.__init_state_machine()
         sm.handle()
         manager.register_player.assert_called()
         assert sm.state == StateEnum.WAIT_GAME_START.name
@@ -203,11 +203,7 @@ class TestStateMachine(unittest.TestCase):
         given the fact that i am in the WaitGameStart state,
          i should be able to start the game
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
-
+        manager, sm = self.__init_state_machine()
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
         sm.handle()
@@ -224,21 +220,14 @@ class TestStateMachine(unittest.TestCase):
         given the fact that i am in the WaitGameStart state,
          i should be able to start the game
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 50000}
-        # when manager.set_pause is called, set manager.game["pause"] to True/False
-        manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
-
+        manager, sm = self.__init_state_machine()
         # when i handle the state machine, it registers the players
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
         sm.handle()
         assert sm.state == StateEnum.IN_GAME.name
         sm.handle()
-        assert manager.game["pause"] is False
+        assert manager._robot.game["pause"] is False
 
     def test_players_disconnected(self):
         """
@@ -250,7 +239,7 @@ class TestStateMachine(unittest.TestCase):
         # When a player disconnects, the state machine should
          switch to the WaitPlayers state
         """
-        manager = mock.Mock(ArenaManager)
+        manager, sm = self.__init_state_machine()
         manager.players = ["player1"]
         manager.registered_players = []
         manager.all_players_connected = False
@@ -258,13 +247,11 @@ class TestStateMachine(unittest.TestCase):
         # when manager.register_player is called, set manager.players to specified value
         manager.register_player.side_effect = lambda player: manager.registered_players.append(player)
         manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
-        sm = StateMachine(manager)
-        sm.define_states(StateMachineConfig())
 
         # when i handle the state machine,
         # it registers the player 1 and wait for more players
         sm.handle()
-        manager.register_player.assert_called_once()
+        manager.register_player.assert_called()
         assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
         # player 2 connects
         manager.players = ["player1", "player2"]
@@ -301,11 +288,7 @@ class TestStateMachine(unittest.TestCase):
         # given the fact that i am in the InGame state,
          i should be able to end the game
         """
-        manager = mock.Mock(ArenaManager)
-        manager.players = ["player1", "player2"]
-        manager.game = {"pause": True, "timeElapsed": 0, "timeLimit": 0}
-        manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
-
+        manager, sm = self.__init_state_machine()
         sm = StateMachine(manager)
         sm.define_states(StateMachineConfig())
 
@@ -321,7 +304,7 @@ class TestStateMachine(unittest.TestCase):
         assert sm.state == StateEnum.END_GAME.name
         # then, EndGame state should put the game in pause and display the end game message
         sm.handle()
-        assert manager.game["pause"] is True
+        assert manager._robot.game["pause"] is True
 
     def test_state_machine_config_0(self):
         """

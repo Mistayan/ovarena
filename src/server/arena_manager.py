@@ -36,7 +36,7 @@ class ArenaManager(IManager):
 
     __state_machine: StateMachine
 
-    def __init__(self, nom, arene, username, password):
+    def __init__(self, agent):
         """
         Constructor of the class Gestionnaire, subclass of Agent.
         :param nom: name of the robot : should be registered in a .dotenv file
@@ -51,7 +51,7 @@ class ArenaManager(IManager):
         self.__game_running = False
         self.__registered_players: List[Player] = []
 
-        self._robot = super().__init__(nom, arene, username, password)
+        super().__init__(agent)
         _init_logger()
         # define variables to retain information about the game
         # self.__map: List[List[int]] = []
@@ -60,23 +60,21 @@ class ArenaManager(IManager):
         self.__state_machine = StateMachine(self).define_states(StateMachineConfig())
 
         # define the rules of the arena
-        self.ruleArena("info", "🔴 Arène en cours de construction ")
-        self.update()
+        self.display("🔴 Arène en cours de construction ")
         with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
             self.__rules = json.load(json_file)
             self.__update_rules(self.__rules)
         self.__time_limit = self.__rules.get("timeLimit")
-        self.ruleArena("pause", True)
-        self.ruleArena("reset", True)
-        print("BEFORE", self.game)
+        self.set_pause(True)
+        self.restart()
+        print("BEFORE", self._robot.game)
         # change manager's State to wait for players
-        self.ruleArena("info", "En attente des joueurs...")
-        self.update()
-        self.robot.addEventListener(RobotEvent.robotConnected, self.__state_machine.handle)
-        self.robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
-        self.robot.addEventListener(RobotEvent.updated, self.on_update)
-        self.robot.addEventListener(RobotEvent.playerChanged, self.update_players)
-        print("AFTER", self.game)
+        self.display("En attente des joueurs...")
+        self._robot.addEventListener(RobotEvent.robotConnected, self.__state_machine.handle)
+        self._robot.addEventListener(RobotEvent.robotDisconnected, self.__state_machine.handle)
+        self._robot.addEventListener(RobotEvent.updated, self.on_update)
+        self._robot.addEventListener(RobotEvent.playerChanged, self.update_players)
+        print("AFTER", self._robot.game)
         print("Gestionnaire done init")
 
     def on_update(self, other, event, value) -> None:
@@ -84,15 +82,11 @@ class ArenaManager(IManager):
         On each update, the manager checks the arena state machine and the arena events.
         For each player, it updates the player's state machine and the player's events.
         """
-        print(f"on_update : {self.state} => {other.__class__.__name__} "
-              f"Received : {event} : {value}")
-        super()._onUpdated(other, event, value)
-        # Let curent state handle the update and
+        self._logger.debug(f"on_update : {self.state} => {other.__class__.__name__} "
+                           f"Received : {event} : {value}")
+        # Let curent state handle the update
         self.__update_timers()
         self.__state_machine.handle()
-
-        # update players
-        self.update_players()
 
     @property
     def __all_players_dead(self) -> bool:
@@ -109,7 +103,8 @@ class ArenaManager(IManager):
         """
         Return False if the game time is elapsed.
         """
-        return self.game["t"] <= self.__start_time + self.__paused_time + self.__time_limit
+        return (self._robot.game["t"] <=
+                self.__start_time + self.__paused_time + self.__time_limit)
 
     @property
     def game_loop_running(self) -> bool:
@@ -124,7 +119,7 @@ class ArenaManager(IManager):
         wanted = self.__rules['maxPlayers']
         registered = len(self.__registered_players)
         self._logger.debug(f"registered : {registered}, wanted : {wanted}")
-        status = registered == wanted
+        status = registered == wanted and len(self._robot.players) == wanted
         self._logger.info(f"All players connected : {status}")
         return status
 
@@ -146,8 +141,8 @@ class ArenaManager(IManager):
         """
         This method is the main loop of the game.
         """
-        print("Game loop started")
-        self.__start_time = self.game['t']
+        self._logger.info("Game loop started")
+        self.__start_time = self._robot.game['t']
 
         while self.state != "END_GAME":
             self._logger.debug(f"Game loop running : {self.game_loop_running} => {self.state}")
@@ -155,7 +150,8 @@ class ArenaManager(IManager):
             self._logger.debug(f"Game loop ended ! Running : {self.game_loop_running}")
             self.__state_machine.handle()
 
-        self._logger.info(f"Game total time : {(int(self.game['t']) - self.__start_time) // 1000}s")
+        self._logger.info(f"Game total time :"
+                          f" {(int(self._robot.game['t']) - self.__start_time) // 1000}s")
         self._logger.debug(f"Game infos : {self.__game_infos}")
         self._logger.info("Generating score board...")
         self.__state_machine.handle()
@@ -170,16 +166,16 @@ class ArenaManager(IManager):
         self._logger.debug(f"Updating rules to : {self.__rules}")
         self.__rules = rules
         for key, value in rules.items():
-            self.ruleArena(key, value)
-        self.update()
+            self._robot.ruleArena(key, value)
+        self._robot.update()
 
     def set_pause(self, pause: bool) -> bool:
         """
         Set the pause state of the arena.
         :param pause: True to pause the arena, False to unpause
         """
-        self.ruleArena("pause", pause)
-        # self.update()
+        self._robot.ruleArena("pause", pause)
+        self._robot.update()
         return pause
 
     def set_map(self, _map: List[List[int]]) -> bool:
@@ -187,7 +183,7 @@ class ArenaManager(IManager):
         Set the map of the arena.
         :param _map: the map to set
         """
-        self.ruleArena("map", _map)
+        self._robot.ruleArena("map", _map)
         # self.update()
         if self.get_rules["map"] == _map:
             return True
@@ -238,22 +234,24 @@ class ArenaManager(IManager):
         :param player_id: the id of the player to unregister
         """
         p = self.__get_player(player_id)
-        self.rulePlayer(p.name, "reset", True)
+        self._robot.rulePlayer(p.name, "reset", True)
         self.registered_players.remove(p)
 
     def update_player_stats(self, player: Union[int | str]) -> Player:
         pass
 
-    def update_players(self, *args, **kwargs) -> None:
+    def update_players(self, a1, event, before, after) -> None:
         """
         This method on each update, gathers players from arena and update them internally.
         It also handles the players' events.
         """
         # get players from arena
-        arena_players = self.players
+        arena_players = self._robot.players
         if arena_players is None or len(arena_players) == 0:
             raise ValueError("No players found in arena")
             # TODO : HANDLE OTHER EVENTS
+        self._logger.debug(f"Players : {arena_players}, from : {a1},"
+                           f" event : {event}, before : {before}, after : {after}")
 
     def __str__(self):
         """
@@ -266,7 +264,7 @@ class ArenaManager(IManager):
         Display a message on the arena.
         :param message: the message to display
         """
-        self.ruleArena("info", message)
+        self._robot.ruleArena("info", message)
 
     @property
     def state(self) -> str:
@@ -281,9 +279,9 @@ class ArenaManager(IManager):
         Return the game info dict.
         """
         return {
-            self.game['t']: {
+            self._robot.game['t']: {
                 "state": self.state,
-                "players": self.players,
+                "players": self._robot.players,
                 "registered_players": self.registered_players,
                 "time_limit": self.get_rules['timeLimit'],
                 "timers": self.__timers
@@ -298,9 +296,7 @@ class ArenaManager(IManager):
         return {
             "start_time": self.__start_time,
             "paused_time": self.__paused_time,
-            "loop_execution_time": f"{int(self.last_loop_time)}ms",
-            "game_time": self.game['t'],
-
+            "loop_exec_time": f"{int(self.last_loop_time)}ms",
         }
 
     @property
@@ -327,7 +323,7 @@ class ArenaManager(IManager):
         """
         self._logger.debug(f"Current game state: {self.state}")
         if "WAIT" in self.state:
-            self.__paused_time += (int(self.game['t']) - self.__start_time
+            self.__paused_time += (int(self._robot.game['t']) - self.__start_time
                                    - self.last_loop_time - self.__paused_time)
             self._logger.debug(f"Paused time : {self.__paused_time}")
         self._logger.debug(f"Timers : {self.__timers}")
@@ -339,7 +335,7 @@ class ArenaManager(IManager):
         self._logger.info("Restarting game...")
         self.set_pause(True)
         self.__game_running = False
-        self.__start_time = self.game['t']
+        self.__start_time = self._robot.game['t']
         for player in self.registered_players:
             self.unregister_player(player.name)
         self.__state_machine.set_actual_state(StateEnum.WAIT_PLAYERS_CONNEXION)
@@ -356,19 +352,17 @@ class ArenaManager(IManager):
         """
         set the game key to the given value
         """
-        self.ruleArena(key, value)
-        self.update()
+        self._robot.ruleArena(key, value)
+        self._robot.update()
 
 
 if __name__ == '__main__':
     import dotenv
+    from src.api.j2l.pytactx.agent import Agent
 
     dotenv.load_dotenv()
     print(os.getenv("USER"))
-    with ArenaManager(
-            os.getenv("USER"),
-            os.getenv("ARENA"),
-            os.getenv("LOGIN"),
-            os.getenv("PASSWORD")
-    ) as gest:
+    agent: Agent = Agent(os.getenv("USER"), os.getenv("ARENA"),
+                         os.getenv("USERNAME"), os.getenv("PASSWORD"))
+    with ArenaManager(agent) as gest:
         gest.game_loop()

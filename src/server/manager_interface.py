@@ -12,23 +12,25 @@ from src.api.j2l.pytactx.agent import Agent
 from .models import Player
 
 
-class IManager(Agent, ABC):
+class IManager(ABC):
     """
     Define the interface for managing the arena.
 
     Every method must be implemented by the Manager.
     """
+    _robot: Agent
 
     @abstractmethod
-    def __init__(self, nom, arene, username, password):
+    def __init__(self, agent: Agent):
         """
         Initialize the manager.
         use super().__init__() to initialize the Agent
         """
         self.__last_loop_time = 0
         print("IManager super init")
-        super().__init__(nom, arene, username, password, server="mqtt.jusdeliens.com",
-                         verbosity=root_config.LOGGING_LEVEL)
+        if not isinstance(agent, Agent):
+            raise TypeError(f"Agent must be a subclass of Agent, got {type(agent)}")
+        self._robot = agent
         print("IManager done init")
 
     @property
@@ -48,7 +50,7 @@ class IManager(Agent, ABC):
         while self.game_loop_running:
             sleep(1.501)
             loop_start_time = perf_counter()
-            self.update()
+            self._robot.update()
             self.__last_loop_time = (perf_counter() - loop_start_time) * 1000
 
     ############################
@@ -152,15 +154,15 @@ class IManager(Agent, ABC):
         """
 
     def __del__(self):
-        self.disconnect()
+        self._robot.disconnect()
         print("Manager deleted")
 
     def __enter__(self):
         """
         called when entering a with statement
         """
-        while not self.isConnectedToArena():
-            self.connect()
+        while not self._robot.isConnectedToArena():
+            self._robot.connect()
             sleep(1)
         return self
 
@@ -168,5 +170,5 @@ class IManager(Agent, ABC):
         """
         called when exiting a with statement
         """
-        self.disconnect()
+        self._robot.disconnect()
         return False
