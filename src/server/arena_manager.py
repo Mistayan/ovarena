@@ -201,14 +201,14 @@ class ArenaManager(IManager):
                 return player
         return None
 
-    def kill_player(self, player_id: int) -> Player:
+    def kill_player(self, player: str) -> Player:
         """
         Kill a player.
-        :param player_id: the id of the player to kill
+        :param player: player to kill
         :return: the killed player
         """
-        self._logger.info(f"Killing player {player_id}")
-        p = self.__get_player(player_id)
+        self._logger.info(f"Killing player {player}")
+        p = self.__get_player(player)
         p.health = 0
         return p
 

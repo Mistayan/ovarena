@@ -97,10 +97,10 @@ class IManager(ABC):
     # ARENA PLAYERS MANAGEMENT #
     ############################
     @abstractmethod
-    def kill_player(self, player_id: int) -> Player:
+    def kill_player(self, player: str) -> Player:
         """
         Kill a player.
-        :param player_id: the id of the player to kill
+        :param player: player to kill
         :return: the killed player's reference
         """
 
@@ -120,7 +120,7 @@ class IManager(ABC):
         """
 
     @abstractmethod
-    def update_players(self, *args, **kwargs):
+    def update_players(self, a1, event, before, after) -> None:
         """
         This method is called when a player connects or disconnects.
         """
