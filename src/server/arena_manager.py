@@ -236,7 +236,7 @@ class ArenaManager(IManager):
         """
         p = self.__get_player(player_id)
         self._robot.rulePlayer(p.name, "reset", True)
-        self.registered_players.remove(p)
+        self.__registered_players.remove(p)
 
     def update_player_stats(self, player: Union[int | str]) -> Player:
         pass
@@ -258,7 +258,7 @@ class ArenaManager(IManager):
         """
         String representation of the object.
         """
-        return "Gestionnaire"
+        return "Manager"
 
     def display(self, message: str) -> None:
         """
