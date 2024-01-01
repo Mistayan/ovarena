@@ -4,23 +4,41 @@ This class defines the actions a Manager can do on the game.
 """
 
 from abc import ABC, abstractmethod
-from time import sleep
+from time import sleep, perf_counter
 from typing import Dict, Any, List
 
+import root_config
 from src.api.j2l.pytactx.agent import Agent
-from src.server.models import Player
+from .models import Player
 
 
-class IManager(Agent, ABC):
+class IManager(ABC):
     """
     Define the interface for managing the arena.
 
     Every method must be implemented by the Manager.
     """
+    _robot: Agent
 
     @abstractmethod
-    def __init__(self, nom, arene, username, password, server="mqtt.jusdeliens.com"):
-        super().__init__(nom, arene, username, password, server=server, verbosity=2)
+    def __init__(self, agent: Agent):
+        """
+        Initialize the manager.
+        use super().__init__() to initialize the Agent
+        """
+        self.__last_loop_time = 0
+        print("IManager super init")
+        if not isinstance(agent, Agent):
+            raise TypeError(f"Agent must be a subclass of Agent, got {type(agent)}")
+        self._robot = agent
+        print("IManager done init")
+
+    @property
+    def last_loop_time(self) -> int:
+        """
+        Return the time of the last loop in milliseconds
+        """
+        return int(self.__last_loop_time)
 
     @abstractmethod
     def game_loop(self):
@@ -29,42 +47,36 @@ class IManager(Agent, ABC):
         it should only be called once
         before running a game loop, ensure that all callbacks are set
         """
-        while True:
-            sleep(0.1)
-            self.update()
+        while self.game_loop_running:
+            sleep(1.501)
+            loop_start_time = perf_counter()
+            self._robot.update()
+            self.__last_loop_time = (perf_counter() - loop_start_time) * 1000
 
     ############################
     # CONNECTIVITY MANAGEMENT  #
     ############################
     @abstractmethod
-    def on_update(self) -> None:
+    def on_update(self, other, event, value) -> None:
         """
         Define what must be done on each update.
         """
-        pass
 
     ##########################
     # ARENA RULES MANAGEMENT #
     ##########################
 
-    @abstractmethod
-    def set_rules(self, rules: Dict[str, Any]) -> None:
-        """
-        Set the rules of the arena.
-        """
-        pass
-
+    @property
     @abstractmethod
     def get_rules(self) -> Dict[str, Any]:
         """
         Get the rules applied to the arena.
         """
-        pass
 
+    @property
     @abstractmethod
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
-        pass
 
     @abstractmethod
     def set_pause(self, pause: bool) -> bool:
@@ -74,37 +86,23 @@ class IManager(Agent, ABC):
         :param pause: True to pause the game, False to resume
         :return: the new pause state applied to the game
         """
-        pass
 
     @abstractmethod
-    def set_map(self, map: List[List[int]]) -> bool:
-        pass
-
-    @abstractmethod
-    def start_game(self, *args, **kwargs) -> bool:
+    def set_map(self, _map: List[List[int]]) -> bool:
         """
-        This method is called when the game starts.
+        Set the map of the arena.
         """
-        pass
-
-    @abstractmethod
-    def end_game(self, *args, **kwargs) -> bool:
-        """
-        This method is called when the game ends.
-        """
-        pass
 
     ############################
     # ARENA PLAYERS MANAGEMENT #
     ############################
     @abstractmethod
-    def kill_player(self, player_id: int) -> Player:
+    def kill_player(self, player: str) -> Player:
         """
         Kill a player.
-        :param player_id: the id of the player to kill
+        :param player: player to kill
         :return: the killed player's reference
         """
-        pass
 
     @abstractmethod
     def register_player(self, player: Player) -> Player:
@@ -113,7 +111,6 @@ class IManager(Agent, ABC):
         :param player: the player to register to the arena and spawn
         :return: the registered player's reference
         """
-        pass
 
     @abstractmethod
     def unregister_player(self, player_id: int) -> None:
@@ -121,14 +118,12 @@ class IManager(Agent, ABC):
         Unregister a player. (cannot be undone)
         :param player_id: the id of the player to unregister
         """
-        pass
 
     @abstractmethod
-    def update_players(self, *args, **kwargs):
+    def update_players(self, a1, event, before, after) -> None:
         """
         This method is called when a player connects or disconnects.
         """
-        pass
 
     @abstractmethod
     def update_player_stats(self, player: Player) -> Player:
@@ -137,35 +132,46 @@ class IManager(Agent, ABC):
         :param player: the player to update
         :return: the updated player's reference
         """
-        pass
+
+    @property
+    @abstractmethod
+    def state(self) -> str:
+        """
+        Return the actual state name of the arena.
+        """
 
     @abstractmethod
-    def get_player(self, player_id: int) -> Player:
+    def display(self, message):
         """
-        Get a player.
-        :param player_id: the id of the player to get
-        :return: the player reference if found, None otherwise
+        Display a message on the arena.
         """
-        pass
 
+    @property
     @abstractmethod
-    def wait_all_players(self, *args, **kwargs):
+    def game_loop_running(self) -> bool:
         """
-        This method is called when a player connects or disconnects.
+        return True if the game is running
         """
-        pass
+
+    def __del__(self):
+        self.__exit__(None, None, None)
+        print("Manager deleted")
 
     def __enter__(self):
         """
         called when entering a with statement
         """
-        if not self.isConnectedToRobot():
-            self.connect()
+        while not self._robot.isConnectedToArena():
+            self._robot.connect()
+            sleep(1)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
         called when exiting a with statement
         """
-        self.disconnect()
-        return False
+        try:
+            self._robot.disconnect()
+            return True
+        except Exception as e:
+            return False

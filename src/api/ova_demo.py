@@ -9,7 +9,6 @@ import time
 import j2l.pyrobotx.client as ova
 from j2l.pyrobotx.robot import IRobot, RobotEvent
 
-
 # Pour piloter une ova via un broker MQTT
 robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
                                   port=1883,
@@ -20,13 +19,40 @@ robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
 # robot:IRobot = OvaClientHttpV2(url="192.168.x.x")
 
 
+def avance(_robot: IRobot, right_motor: int = 100, left_motor: int = -100):
+    """
+    Fait avancer le robot
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def recule(_robot: IRobot, right_motor: int = -100, left_motor: int = 100):
+    """
+    Fait reculer le robot
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def droite(_robot: IRobot, right_motor: int = 100, left_motor: int = 100):
+    """
+    Fait tourner le robot à droite
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def gauche(_robot: IRobot, right_motor: int = 100, left_motor: int = -100):
+    """
+    Fait tourner le robot à gauche
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
 # Appel de la callback onRobotEvent pour chaque évènements du robot
 def on_update(source, event, value):
     """
     Callback appelée à chaque évènement du robot
     """
     print("Rx event", event, "from", source, ":", value)
-
 
 
 robot.addEventListener(RobotEvent.imageReceived, on_update)

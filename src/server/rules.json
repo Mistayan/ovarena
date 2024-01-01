@@ -1,5 +1,8 @@
 {
-  "maxRobot": 5,
+  "timeLimit": 180000000,
+  "maxPlayers": 5,
+  "maxRobots": 4,
+  "pause": true,
   "blind": [
     true,
     false,
