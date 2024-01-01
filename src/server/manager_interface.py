@@ -154,7 +154,7 @@ class IManager(ABC):
         """
 
     def __del__(self):
-        self._robot.disconnect()
+        self.__exit__(None, None, None)
         print("Manager deleted")
 
     def __enter__(self):
@@ -170,5 +170,8 @@ class IManager(ABC):
         """
         called when exiting a with statement
         """
-        self._robot.disconnect()
-        return False
+        try:
+            self._robot.disconnect()
+            return True
+        except Exception as e:
+            return False
