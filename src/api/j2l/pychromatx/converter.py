@@ -17,54 +17,57 @@
 # with the same dir to allow intellisense
 import os
 import sys
+
 __workdir__ = os.path.dirname(os.path.abspath(__file__))
 __libdir__ = os.path.dirname(__workdir__)
 sys.path.append(__libdir__)
 
 import pyanalytx.logger as anx
 
-def colorFromPercent(percent:float):
-    LED_MAGENTA_THRESHOLD = 300.0/360.0
-    LED_BLUE_THRESHOLD = 240.0/360.0
-    LED_CYAN_THRESHOLD = 180.0/360.0
-    LED_GREEN_THRESHOLD = 90.0/360.0
-    LED_YELLOW_THRESHOLD = 60/360.0
-    LED_RED_THRESHOLD = 0.0/360.0
-    if ( percent < 0.0 ):
+
+def colorFromPercent(percent: float):
+    LED_MAGENTA_THRESHOLD = 300.0 / 360.0
+    LED_BLUE_THRESHOLD = 240.0 / 360.0
+    LED_CYAN_THRESHOLD = 180.0 / 360.0
+    LED_GREEN_THRESHOLD = 90.0 / 360.0
+    LED_YELLOW_THRESHOLD = 60 / 360.0
+    LED_RED_THRESHOLD = 0.0 / 360.0
+    if (percent < 0.0):
         percent = 0.0
     r = 0
     g = 0
     b = 0
-    if ( percent <= LED_RED_THRESHOLD ):
+    if (percent <= LED_RED_THRESHOLD):
         r = 255
-    elif ( percent <= LED_YELLOW_THRESHOLD ):
+    elif (percent <= LED_YELLOW_THRESHOLD):
         r = 255
-        g = int(255.0 * (percent - LED_RED_THRESHOLD)  / (LED_YELLOW_THRESHOLD-LED_RED_THRESHOLD))
-    elif ( percent <= LED_GREEN_THRESHOLD ):
-        r = int(255.0 - 255.0 * (percent - LED_YELLOW_THRESHOLD)  / (LED_GREEN_THRESHOLD-LED_YELLOW_THRESHOLD))
+        g = int(255.0 * (percent - LED_RED_THRESHOLD) / (LED_YELLOW_THRESHOLD - LED_RED_THRESHOLD))
+    elif (percent <= LED_GREEN_THRESHOLD):
+        r = int(255.0 - 255.0 * (percent - LED_YELLOW_THRESHOLD) / (LED_GREEN_THRESHOLD - LED_YELLOW_THRESHOLD))
         g = 255
-    elif ( percent <= LED_CYAN_THRESHOLD ):
-        b = int(255.0 * (percent - LED_GREEN_THRESHOLD)  / (LED_CYAN_THRESHOLD-LED_GREEN_THRESHOLD))
+    elif (percent <= LED_CYAN_THRESHOLD):
+        b = int(255.0 * (percent - LED_GREEN_THRESHOLD) / (LED_CYAN_THRESHOLD - LED_GREEN_THRESHOLD))
         g = 255
-    elif ( percent <= LED_BLUE_THRESHOLD ):
+    elif (percent <= LED_BLUE_THRESHOLD):
         b = 255
-        g = int(255.0 - 255.0 * (percent - LED_CYAN_THRESHOLD)  / (LED_BLUE_THRESHOLD-LED_CYAN_THRESHOLD))
-    elif ( percent <= LED_MAGENTA_THRESHOLD ):
+        g = int(255.0 - 255.0 * (percent - LED_CYAN_THRESHOLD) / (LED_BLUE_THRESHOLD - LED_CYAN_THRESHOLD))
+    elif (percent <= LED_MAGENTA_THRESHOLD):
         b = 255
-        r = int(255.0 * (percent - LED_BLUE_THRESHOLD)  / (LED_MAGENTA_THRESHOLD-LED_BLUE_THRESHOLD))
+        r = int(255.0 * (percent - LED_BLUE_THRESHOLD) / (LED_MAGENTA_THRESHOLD - LED_BLUE_THRESHOLD))
     else:
         r = 255
-        b = int(255.0 - 255.0 * (percent - LED_MAGENTA_THRESHOLD)  / (1.0-LED_MAGENTA_THRESHOLD))
-    return (r,g,b)
+        b = int(255.0 - 255.0 * (percent - LED_MAGENTA_THRESHOLD) / (1.0 - LED_MAGENTA_THRESHOLD))
+    return (r, g, b)
 
-def RGBToHSL(r,g,b): 
+
+def RGBToHSL(r, g, b):
     # Make r, g, and b fractions of 1
     r /= 255
     g /= 255
     b /= 255
     # Find greatest and smallest channel values
-    cmin = min(r,g,b)
-    cmax = max(r,g,b)
+    cmin = min(r, g, b)
+    cmax = max(r, g, b)
     delta = cmax - cmin
     h = 0
     s = 0
@@ -89,26 +92,27 @@ def RGBToHSL(r,g,b):
     # Calculate lightness
     l = (cmax + cmin) / 2
     # Calculate saturation
-    if ( delta == 0 ):
-        s = 0 
+    if (delta == 0):
+        s = 0
     else:
         s = delta / (1 - abs(2 * l - 1))
     # Multiply l and s by 100
     s = int(s * 100)
-    if ( s > 100 ):
+    if (s > 100):
         s = 100
     l = int(l * 100)
-    if ( l > 100 ):
+    if (l > 100):
         l = 100
-    return (h,s,l)
+    return (h, s, l)
 
-def HSLToRGB(h,s,l):
+
+def HSLToRGB(h, s, l):
     # Must be fractions of 1
     s /= 100.0
     l /= 100.0
     c = (1 - abs(2 * l - 1)) * s
     x = c * (1 - abs((h / 60) % 2 - 1))
-    m = l - c/2
+    m = l - c / 2
     r = 0
     g = 0
     b = 0
@@ -137,15 +141,16 @@ def HSLToRGB(h,s,l):
         g = 0
         b = x
     r = int((r + m) * 255)
-    if ( r > 255 ):
+    if (r > 255):
         r = 255
         g = int((g + m) * 255)
-    if ( g > 255 ):
+    if (g > 255):
         g = 255
         b = int((b + m) * 255)
-    if ( b > 255 ):
+    if (b > 255):
         b = 255
-    return (r,g,b)
+    return (r, g, b)
+
 
 if __name__ == '__main__':
-    anx.warning("⚠️ Nothing to run from lib "+str(__file__))
+    anx.warning("⚠️ Nothing to run from lib " + str(__file__))
