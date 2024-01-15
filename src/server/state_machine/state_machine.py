@@ -28,16 +28,13 @@ def dynamic_imp(package_name, class_name):
     if found, otherwise
     # raise ImportError and return (None, None)
     """
-    myclass = None
-    package = None
     try:
         package = import_module(package_name)
         myclass = getattr(package, class_name)
+        return package, myclass
     except ImportError as e:
         logging.error(e)
-    finally:
-        logging.debug(package, myclass)
-    return package, myclass
+        raise ImportError(f"Error while importing {class_name} from {package_name}")
 
 
 class StateMachine:
@@ -109,12 +106,12 @@ class StateMachine:
                              f"is not allowed to switch to {requested_state.name}")
         self.__actual_state = requested_state
 
-    def handle(self):
+    def handle(self, *args):
         """Execute the actual state handle method
         Warning, once called it locks the state machine, thus preventing any change to the states
         """
         self.__lock = True
-        self._logger.debug(f'Handling state : {self.__actual_state}')
+        self._logger.debug(f'Handling state : {self.__actual_state} with args {args}')
         self.__states[self.__actual_state.name].handle()
 
     def __is_allowed(self, new_state: StateEnum) -> bool:
@@ -124,8 +121,6 @@ class StateMachine:
         if self.__actual_state is None:
             return True
         for state_from, state_to in self.__allowed_switches:
-            self._logger.debug(f"Checking from state :"
-                               f" {str(state_from.name)} to {str(state_to.name)}")
             if (self.__actual_state and
                     state_from.name == self.__actual_state.name and
                     state_to.name == new_state.name):

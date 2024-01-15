@@ -2,6 +2,8 @@
 Test Manager Unit Tests
 """
 import unittest
+import pytest
+
 from copy import copy
 from unittest.mock import Mock
 
@@ -12,32 +14,35 @@ from src.server.arena_manager import ArenaManager
 Agent = Mock(Agent)
 
 
+def new_test_agent():
+    """
+    Create a mock Agent, with predefined behavior for the test
+    """
+    # Create a mock Agent, with predefined behavior for the test
+    init_dict = {'t': -1, 'pause': True, 'maxPlayers': 2}
+    fake_agent = Mock(Agent.__class__)
+    fake_agent.game = copy(init_dict)
+    fake_agent.players = ["p1"]
+    fake_agent.set_context = lambda x: x
+    # when agent.ruleArena is called, update the game dict
+    fake_agent.ruleArena = lambda k, v: fake_agent.game.update({k: v})
+
+    return fake_agent
+
+
+def new_2players_arena():
+    from src.server import ArenaManager
+    fake_agent = new_test_agent()
+    arena_manager = ArenaManager(fake_agent)
+    arena_manager._robot = fake_agent
+    fake_agent.players = []
+    return fake_agent, arena_manager
+
+
 class TestManager(unittest.TestCase):
     """
     Test the manager without connecting to the server
     """
-
-    def __new_test_agent(self):
-        """
-        Create a mock Agent, with predefined behavior for the test
-        """
-        # Create a mock Agent, with predefined behavior for the test
-        init_dict = {'t': -1, 'pause': True, 'maxPlayers': 2}
-        fake_agent = Mock(Agent.__class__)
-        fake_agent.game = copy(init_dict)
-        fake_agent.players = ["p1"]
-        # when agent.ruleArena is called, update the game dict
-        fake_agent.ruleArena = lambda k, v: fake_agent.game.update({k: v})
-
-        return fake_agent
-
-    def __new_2players_arena(self):
-        fake_agent = self.__new_test_agent()
-        arena_manager = ArenaManager(fake_agent)
-        arena_manager.mod_game('maxPlayers', 2)
-        arena_manager._robot = fake_agent
-
-        return fake_agent, arena_manager
 
     def test_init_manager_ko(self):
         """
@@ -50,23 +55,15 @@ class TestManager(unittest.TestCase):
         """
         Test that the manager can be printed as a string
         """
-        fake_agent = self.__new_test_agent()
-
-        # Create an instance of ArenaManager with the mock Agent
-        arena_manager = ArenaManager(fake_agent)
-        arena_manager._robot = fake_agent
+        fake_agent, arena_manager = new_2players_arena()
         assert str(arena_manager) == "Manager"
 
     def test_game_init_ok(self):
         """
         Test that the game is correctly initialized
         """
-        fake_agent = self.__new_test_agent()
+        fake_agent, arena_manager = new_2players_arena()
 
-        # Create an instance of ArenaManager with the mock Agent
-        arena_manager = ArenaManager(fake_agent)
-        arena_manager.mod_game('maxPlayers', 2)
-        arena_manager._robot = fake_agent
         assert arena_manager._robot == fake_agent
 
         assert arena_manager._robot.game['pause'] is True
@@ -77,18 +74,17 @@ class TestManager(unittest.TestCase):
         """
         Test that a player that just logged in is registered
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
         # simulate a player just logged in
         fake_agent.players = ["p1"]
         # simulate server sent response event
-        arena_manager.on_update(None, "event", "p1")
+        arena_manager._on_update(None, "event", "p1")
 
         assert arena_manager.state == 'WAIT_PLAYERS_CONNEXION'
         assert len(arena_manager.registered_players) == 1
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p2")
+        arena_manager._on_update(None, "event", "p2")
         print(arena_manager.registered_players)
-        print(arena_manager.get_rules)
         assert arena_manager.state == 'WAIT_GAME_START'
         assert len(arena_manager.registered_players) == 2
         print(arena_manager.registered_players)
@@ -102,22 +98,22 @@ class TestManager(unittest.TestCase):
         Test that a player that just logged out is still registered
         and the game is waiting for him to reconnect
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         # simulate a player just logged in
         assert arena_manager.all_players_connected is False
 
         fake_agent.players = ["p1", "p2"]
         # simulate server sent response event
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         assert arena_manager.all_players_connected is True
         assert arena_manager.state == 'WAIT_GAME_START'
         assert len(arena_manager.registered_players) == 2
 
-        arena_manager.on_update(None, "event", None)
+        arena_manager._on_update(None, "event", None)
         assert arena_manager.state == 'IN_GAME'
         fake_agent.players = ["p1"]
-        arena_manager.on_update(None, "event", "p1")
+        arena_manager._on_update(None, "event", "p1")
         assert arena_manager.all_players_connected is False
 
         # player is still registered, and game is waiting for him to reconnect
@@ -129,11 +125,11 @@ class TestManager(unittest.TestCase):
         """
         Test that a player can be killed by the manager
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
         # simulate players just logged in
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         assert len(arena_manager.registered_players) == 2
         assert arena_manager.game_loop_running is True
         print(arena_manager.registered_players)
@@ -143,10 +139,10 @@ class TestManager(unittest.TestCase):
         assert arena_manager.game_loop_running is False
 
     def test_unregister_player(self):
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         # player p1 has been caught cheating, unregister him
         arena_manager.unregister_player("p1")
         assert len(arena_manager.registered_players) == 1
@@ -159,10 +155,10 @@ class TestManager(unittest.TestCase):
         """
         Test that the map can be set
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         arena_manager.set_map([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         assert arena_manager.state == 'WAIT_PLAYERS'
         assert arena_manager._robot.game['map'] == [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -171,19 +167,19 @@ class TestManager(unittest.TestCase):
         """
         Test that the game can be paused
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
 
     def test_set_rules(self):
         """
         Test that the rules can be set
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         arena_manager.mod_game('t', 0)
         assert arena_manager.state == 'WAIT_GAME_START'
         assert arena_manager._robot.game['t'] == 0
@@ -194,9 +190,9 @@ class TestManager(unittest.TestCase):
         """
         Test that the game loop is functional
         """
-        fake_agent, arena_manager = self.__new_2players_arena()
+        fake_agent, arena_manager = new_2players_arena()
 
         fake_agent.players = ["p1", "p2"]
-        arena_manager.on_update(None, "event", "p1, p2")
+        arena_manager._on_update(None, "event", "p1, p2")
         # start the game loop, with predefined game duration
         arena_manager.game_loop()
