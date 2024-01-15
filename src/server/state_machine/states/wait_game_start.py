@@ -5,6 +5,8 @@ Handles waiting for players to connect to the arena
 
 from __future__ import annotations
 
+import time
+
 from .possible_states import StateEnum
 from .wait_players import WaitPlayers
 
@@ -25,5 +27,6 @@ class WaitGameStart(WaitPlayers):
         If all players are connected, switch to the InGame state
         If not, wait for players to connect
         """
-        if self._agent.game_loop_running:
-            self.switch_state(StateEnum.IN_GAME)
+        time.sleep(1)
+        if self._manager.game_loop_running:
+            return self.switch_state(StateEnum.IN_GAME)
