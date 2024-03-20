@@ -8,15 +8,17 @@ keep records of:
 
 on each updates (time-based)
 """""
+from abc import ABC
 from datetime import datetime
 from typing import List, Dict, Any
 
 from sqlalchemy import Column, Integer, String, DateTime
 
 from . import Base, Direction
+from ...ifaces.player import IPlayer
 
 
-class Player(Base):
+class Player(IPlayer, Base):
     """
     Player's instance in the arena
     """
@@ -112,10 +114,17 @@ class Player(Base):
         self.inventory.remove(item)
         return self.inventory
 
-    def set_position(self, x: int, y: int):
+    def move(self, direction: Direction, distance: int = 1):
         """
-        Set the player's position
+        Move the player in the given direction
         """
-        self.x = x
-        self.y = y
+        if direction == Direction.NORTH:
+            self.y += distance
+        elif direction == Direction.EAST:
+            self.x += distance
+        elif direction == Direction.SOUTH:
+            self.y -= distance
+        elif direction == Direction.WEST:
+            self.x -= distance
         return self.x, self.y
+
