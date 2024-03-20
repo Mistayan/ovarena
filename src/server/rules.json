@@ -1,12 +1,8 @@
 {
   "timeLimit":6000,
-  "desc":"🐮",
   "gridColumns":40,
   "gridRows":40,
   "gridColor":[255,255,255,0.4],
-  "bgImg":"TODO",
-  "logo":"epsi.jpg",
-    "viewer":"tactx",
     "maxPlayers":2,
     "onlyAuthorised":false,
     "whiteList":[],
@@ -18,10 +14,7 @@
     "open":true,
     "public":false,
     "hitTeam":true,
-    "score":"DM",
-    "killReward":{"life":20,"ammo":true},
-    "preview":"epsi.jpg",
-    "hitImg":"",
+    "score":[],
     "map": [
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -63,19 +56,16 @@
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "mapImgs":["https://i.imgur.com/hDLyrOG.jpeg","","","","",""],
     "mapFriction":[1,0,0.5,0.1,1,0],
-    "weapons":["none","beam","bomb"],
     "wIcons":["","🎇","💣"],
     "fireImgs":["","",""],
     "dtFire":[300,300,300],
     "hitFire":[0,10,10],
     "rangeFire":[0,0,10],
     "spreadFire":[0,0,360],
-    "ownerFire":[false,false,true],
+    "ownerFire":[true,false,true],
     "profiles":["default","arbitre","bot1","bot2"],
     "pIcons":["","👮‍","👾","👾"],
-    "pImgs":["ova.svg","ova.svg","ova.svg","ova.svg"],
     "mass":[10,100,10,10],
     "blind":[true,false,false,false],
     "range":[10,0,10,10],
@@ -98,8 +88,8 @@
     "collision":[true,false,true,true],
     "canRulePlayer":[false,true,false,false],
     "canRuleArena":[false,true,false,false],
-    "dtRespawn":[5000,5000,5000,5000],
-    "nRespawn":[0,0,0,0],
+    "dtRespawn":[5000,0,5000,5000],
+    "nRespawn":[0,99,0,0],
     "teamColor":[
       [255,0,0],
       [0,0,255]
@@ -130,5 +120,5 @@
     "speedMax":[100,100,100,100,100],
     "lifeTime":[0,0,0,0,3000],
     "collisionMap":[true,false,true,true,true],
-    "popOnDeath":[false,false,false,false,true]
+    "popOnDeath":[true,false,false,false,true]
 }
