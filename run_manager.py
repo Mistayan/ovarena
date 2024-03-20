@@ -14,8 +14,8 @@ if __name__ == '__main__':
         os.getenv("SERVER"),
         int(os.getenv("PORT"))
     ) as agent:
-        arena_manager = ArenaManager(agent)
-        agent.set_context(arena_manager)
-        arena_manager.game_loop()
-        print("End of game loop")
-        agent.disconnect()
+        with ArenaManager(agent) as arena_manager:
+            agent.set_context(arena_manager)
+            arena_manager.game_loop()
+            print("End of game loop")
+            agent.disconnect()
