@@ -8,17 +8,16 @@ keep records of:
 
 on each updates (time-based)
 """""
-from abc import ABC
 from datetime import datetime
 from typing import List, Dict, Any
 
 from sqlalchemy import Column, Integer, String, DateTime
 
-from . import Base, Direction
-from ...ifaces.player import IPlayer
+from src.shared.direction import Direction
+from src.shared.player import IPlayer
 
 
-class Player(IPlayer, Base):
+class Player(IPlayer):
     """
     Player's instance in the arena
     """
@@ -127,4 +126,3 @@ class Player(IPlayer, Base):
         elif direction == Direction.WEST:
             self.x -= distance
         return self.x, self.y
-

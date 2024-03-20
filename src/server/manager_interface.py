@@ -8,7 +8,7 @@ from time import sleep, perf_counter
 
 from src.api.j2l.pytactx.agent import Agent
 from .arena_agent import SyncAgent
-from .models import Player
+from src.server.models.player import Player
 
 
 class IManager(ABC):

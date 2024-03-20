@@ -15,7 +15,7 @@ import colorama
 
 import root_config
 from src.server.manager_interface import IManager
-from src.server.models import Player
+from src.server.models.player import Player
 from src.server.state_machine import StateMachine, StateMachineConfig
 from src.server.state_machine.states.possible_states import StateEnum
 

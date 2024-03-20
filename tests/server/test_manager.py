@@ -2,8 +2,6 @@
 Test Manager Unit Tests
 """
 import unittest
-import pytest
-
 from copy import copy
 from unittest.mock import Mock
 
@@ -31,7 +29,6 @@ def new_test_agent():
 
 
 def new_2players_arena():
-    from src.server import ArenaManager
     fake_agent = new_test_agent()
     arena_manager = ArenaManager(fake_agent)
     arena_manager._robot = fake_agent

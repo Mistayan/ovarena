@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from src.server import Direction
+from src.shared.direction import Direction
 
 
 class IPlayer(ABC):
@@ -18,7 +18,7 @@ class IPlayer(ABC):
     known_map: List[List[int]]
 
     @abstractmethod
-    def __init__(self, name: str, **kw: Dict):
+    def __init__(self, **kw: Dict):
         """
         connect Player to the arena
         """
