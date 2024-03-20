@@ -1,7 +1,6 @@
 """
 Synchronisation class
 """
-
 import logging
 import time
 from typing import Any
@@ -13,6 +12,7 @@ class SyncAgent(Agent):
     """
     Handles event from agent and copy callbacks to Manager
     """
+
     def __init__(self, user, arena, login, password, server, port):
         self.__logger = logging.getLogger("ArenaAgent")
         self.__context = None
