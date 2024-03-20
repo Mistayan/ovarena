@@ -1,3 +1,8 @@
+"""
+Ce ficier python est utilisé pour instancier une connexion 
+au __robot OVA__ **ou** un __Agent virtuel__
+le robot peut être contrôllé via les différentes méthodes de l'API exposées
+"""
 import random
 import time
 
@@ -7,22 +12,53 @@ from j2l.pyrobotx.robot import IRobot, RobotEvent
 # Pour piloter une ova via un broker MQTT
 robot: IRobot = ova.OvaClientMqtt(server="mqtt.jusdeliens.com",
                                   port=1883,
-                                  useProxy=False)
+                                  useProxy=False)  # Agent Virtuel
 
 
 # Pour piloter une ova sur un LAN ou si vous êtes directement connecté à son point d'accès
-# robot:IRobot = OvaClientHttpV2(url="192.168.x.x") 
+# robot:IRobot = OvaClientHttpV2(url="192.168.x.x")
+
+
+def avance(_robot: IRobot, right_motor: int = 100, left_motor: int = -100):
+    """
+    Fait avancer le robot
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def recule(_robot: IRobot, right_motor: int = -100, left_motor: int = 100):
+    """
+    Fait reculer le robot
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def droite(_robot: IRobot, right_motor: int = 100, left_motor: int = 100):
+    """
+    Fait tourner le robot à droite
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
+
+
+def gauche(_robot: IRobot, right_motor: int = 100, left_motor: int = -100):
+    """
+    Fait tourner le robot à gauche
+    """
+    _robot.setMotorSpeed(right_motor, left_motor)
 
 
 # Appel de la callback onRobotEvent pour chaque évènements du robot
-def onRobotEvent(source, event, value):
+def on_update(source, event, value):
+    """
+    Callback appelée à chaque évènement du robot
+    """
     print("Rx event", event, "from", source, ":", value)
 
 
-robot.addEventListener(RobotEvent.imageReceived, onRobotEvent)
-robot.addEventListener(RobotEvent.robotChanged, onRobotEvent)
-robot.addEventListener(RobotEvent.robotConnected, onRobotEvent)
-robot.addEventListener(RobotEvent.robotDisconnected, onRobotEvent)
+robot.addEventListener(RobotEvent.imageReceived, on_update)
+robot.addEventListener(RobotEvent.robotChanged, on_update)
+robot.addEventListener(RobotEvent.robotConnected, on_update)
+robot.addEventListener(RobotEvent.robotDisconnected, on_update)
 
 print("########################")
 while not robot.isConnectedToRobot():
@@ -71,27 +107,23 @@ print("📸 Test camera")
 robot.enableCamera(True)
 for i in range(50):
     robot.update()
-    sr = 0
-    sg = 0
-    sb = 0
-    n = 0
-    w = robot.getImageWidth()
-    h = robot.getImageHeight()
+    red, green, blue, n = 0, 0, 0, 0
+    w, h = robot.getImageWidth(), robot.getImageHeight()
     for x in range(0, w, 10):
         for y in range(0, h, 10):
             color = robot.getImagePixelRGB(x, y)
-            sr += color[0]
-            sg += color[1]
-            sb += color[2]
+            red += color[0]
+            green += color[1]
+            blue += color[2]
             n += 1
     if n > 0:
-        sr = sr // n
-        sg = sg // n
-        sb = sb // n
+        red = red // n
+        green = green // n
+        blue = blue // n
         print("📸 Camera img " + str(w) + "x" + str(h) + " shot after " +
               str(robot.getImageTimestamp()) + "ms")
-        print("🔴<R>=" + str(sr) + " 🟢<G>=" + str(sg) + " 🔵<B>=" + str(sb))
-        robot.setLedColor(sr, sg, sb)
+        print("🔴<R>=" + str(red) + " 🟢<G>=" + str(green) + " 🔵<B>=" + str(blue))
+        robot.setLedColor(red, green, blue)
     time.sleep(0.1)
 robot.enableCamera(False)
 
