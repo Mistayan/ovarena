@@ -40,29 +40,29 @@ class SyncAgent(Agent):
         if self.__context:
             self.__context._on_update(eventSrc, eventName, arenaState)
 
-    def _onUpdated(self, eventSrc: Any, eventName: str, gameState: dict[str, Any]):
-        self.__logger.info(f"{eventName} : {gameState}")
-        super()._onUpdated(eventSrc, eventName, gameState)
-        if self.__context:
-            self.__context._on_update(eventSrc, eventName, gameState)
-
-    def _onPlayerNumberChanged(self, valueBefore: list[str], valueAfter: list[str]):
-        self.__logger.info("Player number changed")
-        super()._onPlayerNumberChanged(valueBefore, valueAfter)
-        if self.__context:
-            self.__context._on_update("players count changed", valueBefore, valueAfter)
-
+    # def _onUpdated(self, eventSrc: Any, eventName: str, gameState: dict[str, Any]):
+    #     self.__logger.info(f"{eventName} : {gameState}")
+    #     super()._onUpdated(eventSrc, eventName, gameState)
+    #     if self.__context:
+    #         self.__context._on_update(eventSrc, eventName, gameState)
+    #
+    # def _onPlayerNumberChanged(self, valueBefore: list[str], valueAfter: list[str]):
+    #     self.__logger.info("Player number changed")
+    #     super()._onPlayerNumberChanged(valueBefore, valueAfter)
+    #     if self.__context:
+    #         self.__context._on_update("players count changed", valueBefore, valueAfter)
+    #
     def _onGamePauseChanged(self, valueBefore: bool, valueAfter: bool):
         self.__logger.info("Game pause changed: %s -> %s", valueBefore, valueAfter)
         super()._onGamePauseChanged(valueBefore, valueAfter)
         if self.__context:
             self.__context._on_update("game pause changed", valueBefore, valueAfter)
 
-    def _onRobotNumberChanged(self, valueBefore: list[str], valueAfter: list[str]):
-        self.__logger.info("Robot number changed : %s -> %s", valueBefore, valueAfter)
-        super()._onRobotNumberChanged(valueBefore, valueAfter)
-        if self.__context:
-            self.__context._on_update("robots count changed", valueBefore, valueAfter)
+    # def _onRobotNumberChanged(self, valueBefore: list[str], valueAfter: list[str]):
+    #     self.__logger.info("Robot number changed : %s -> %s", valueBefore, valueAfter)
+    #     super()._onRobotNumberChanged(valueBefore, valueAfter)
+    #     if self.__context:
+    #         self.__context._on_update("robots count changed", valueBefore, valueAfter)
 
     def __enter__(self):
         """
@@ -71,7 +71,8 @@ class SyncAgent(Agent):
         self.__logger.info("Connecting to server")
         while not self.isConnectedToArena():
             self.connect()
-            time.sleep(2.5)
+            print(".", end=".")
+            time.sleep(1.5)
 
         self.__logger.info("Connected to server")
         return self
@@ -81,6 +82,9 @@ class SyncAgent(Agent):
         Disconnect from the server.
         """
         self.__logger.info("Disconnecting from server")
-        self.disconnect()
+        while self.isConnectedToArena():
+            self.disconnect()
+            print(".", end=".")
+            time.sleep(1.5)
         self.__logger.info("Disconnected from server")
         return True

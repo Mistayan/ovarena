@@ -20,7 +20,7 @@ class IManager(ABC):
     _robot: Agent
 
     @abstractmethod
-    def __init__(self, agent: SyncAgent, state_machine):
+    def __init__(self, agent: Agent, state_machine):
         """
         Initialize the manager.
         use super().__init__() to initialize the Agent
@@ -135,10 +135,10 @@ class IManager(ABC):
         """
         return True if the game is running
         """
+        print("game_loop_running")
         raise NotImplementedError()
 
     def __del__(self):
-        self._robot.disconnect()
         self.__exit__(None, None, None)
         print("Manager deleted")
 

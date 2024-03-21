@@ -12,9 +12,9 @@
 # https://creativecommons.org/licenses/by-nc-nd/3.0/ 
 __version__ = '1.0.0'
 
-# Allow import without error 
+# Allow import without error
 # "relative import with no known parent package"
-# In vscode, add .env file with PYTHONPATH="..." 
+# In vscode, add .env file with PYTHONPATH="..."
 # with the same dir to allow intellisense
 import os
 import sys
@@ -46,6 +46,7 @@ class IAgentFr:
         self.idRobot: str = ""
         self.equipe: int = 0
         self.profile: int = 0
+        self.arme: int = 0
         self.dtCreation: int = 0
         self.x: int = 0
         self.y: int = 0
@@ -59,6 +60,10 @@ class IAgentFr:
         self.couleur: tuple[int, int, int] = (0, 255, 0)
         self.infoJoueur = ""
         self.voisins: dict[str, Any] = {}
+        self.dernierCheck: str = ""
+        self.checks: list[str] = []
+        self.tChecks: list[int] = []
+        self.powerUps: dict[str, tuple[Any, int, int, str]] = {}  # value, duration, begin, operator
         self.score: int = 0
         self.classement: int = 0
         self.nTirs: int = 0
@@ -72,6 +77,7 @@ class IAgentFr:
         self.agents: list[str] = []
         self.robots: list[str] = []
         self.carte: tuple[tuple[int]] = ()
+        self.checkpoints: dict[str, dict[str, Any]] = {}
         self.infoArene = ""
         self.jeuEnPause: bool = False
         self.tailleGrilleColonnes: int = 10
@@ -114,6 +120,19 @@ class IAgentFr:
         """
         Demander d'appuyer sur la gachette pour tirer en gachette (gachette=True)
         ou bien de relacher la gachette (gachette=False)
+        La requete sera envoyee au prochain actualiser()
+        """
+        ...
+
+    def changerArme(self, arme: int) -> None:
+        """
+        Demander de changer d'arme dont l'indice est spécifié
+        """
+        ...
+
+    def mourir(self) -> None:
+        """
+        Demander au serveur de mourir avec honeur pour renaitre de ses cendres
         La requete sera envoyee au prochain actualiser()
         """
         ...
@@ -189,6 +208,7 @@ class IAgent:
         self.robotId: str = ""
         self.team: int = 0
         self.profile: int = 0
+        self.weapon: int = 0
         self.x: int = 0
         self.y: int = 0
         self.vx: float = 0.0
@@ -203,6 +223,10 @@ class IAgent:
         self.color: tuple[int, int, int] = (0, 255, 0)
         self.infoPlayer = ""
         self.range: dict[str, Any] = {}
+        self.checked: list[str] = []
+        self.lastChecked: str = ""
+        self.checkedAt: list[int] = []
+        self.powerUps: dict[str, tuple[Any, int, int, str]] = {}  # value, duration, begin, operator
         self.score: int = 0
         self.rank: int = 0
         self.nFire: int = 0
@@ -216,6 +240,7 @@ class IAgent:
         self.players: list[str] = []
         self.robots: list[str] = []
         self.map: tuple[tuple[int]] = []
+        self.checkpoints: dict[str, dict[str, Any]] = {}
         self.infoArena = ""
         self.isGamePaused: bool = False
         self.gridColumns: int = 10
@@ -251,21 +276,7 @@ class IAgent:
         """
         Fetch the last values of robot sensors from server
         And send buffered requests in one shot to limit bandwidth.
-        To be call in the main loop at least every 10 msecs.
-        """
-        ...
-
-    def fire(self, enable: bool = True, firepath: Callable[[int], int] or None = None) -> None:
-        """
-        Request a trigger pull lock (enable=True) or a fire hold (enable=False)
-        The request will be send the next update() call
-        """
-        ...
-
-    def accelerate(self, ax: float, ay: float) -> None:
-        """
-        Add an acceleration force to be applied on the agent.
-        The request will be send the next update() call
+        To be call in the main loop at least every 100 msecs.
         """
         ...
 
@@ -273,14 +284,21 @@ class IAgent:
         """
         Request a relative moves on the grid around the previous agent position
         according to the specified dx, dy values.
-        The request will be send the next update() call
+        Only the last moveTowards or move request performed will be send the next update() call
         """
         ...
 
     def moveTowards(self, x: int, y: int) -> None:
         """
         Request a one step move towards the specified x,y absolute direction on the grid.
-        The request will be send the next update() call
+        Only the last moveTowards or move request performed will be send the next update() call
+        """
+        ...
+
+    def accelerate(self, ax: float, ay: float) -> None:
+        """
+        Add an acceleration force to be applied on the agent.
+        Only the last accelerate request performed will be send the next update() call
         """
         ...
 
@@ -288,28 +306,50 @@ class IAgent:
         """
         Request a rotation of the agent on the grid.
         Dir should be integers values from 0 (east) to 3 (south).
-        The request will be send the next update() call
-        """
-        ...
-
-    def ruleArena(self, attributeName: str, attributeValue: Any) -> None:
-        """
-        Request a change of the arena state
-        The request will be send the next update() call
-        """
-        ...
-
-    def rulePlayer(self, agentId: str, attributeName: str, attributeValue: Any) -> None:
-        """
-        Request a change of a player state
-        The request will be send the next update() call
+        Only the last lookAt request performed will be send the next update() call
         """
         ...
 
     def setColor(self, r: int, g: int, b: int) -> None:
         """
         Request a color change for the robot led
-        The request will be send the next update() call
+        Only the last setColor request performed will be send the next update() call
+        """
+        ...
+
+    def fire(self, enable: bool = True, firepath: Callable[[int], int] or None = None) -> None:
+        """
+        Request a trigger pull lock (enable=True) or a fire hold (enable=False)
+        Only the last fire request performed will be send the next update() call
+        """
+        ...
+
+    def changeWeapon(self, weapon: int) -> None:
+        """
+        Buffers a request of weapon change, to select the index of another available
+        weapon for the actual agent profile.
+        Only the last accelerate request performed will be send the next update() call
+        """
+        ...
+
+    def die(self) -> None:
+        """
+        Request to die with honor in order to force respawn
+        Only the last die request performed will be send the next update() call
+        """
+        ...
+
+    def ruleArena(self, ruleName: str, ruleValue: Any) -> None:
+        """
+        Request a change of the arena state
+        Only the last ruleArena request performed will be send the next update() call
+        """
+        ...
+
+    def rulePlayer(self, agentId: str, attributeName: str, attributeValue: Any) -> None:
+        """
+        Request a change of a player state
+        Only the last rulePlayer request performed will be send the next update() call
         """
         ...
 
@@ -491,6 +531,7 @@ class Agent(IAgent):
             "robotId": ("robotId", Agent._onRobotIdChanged),
             "team": ("team", None),
             "profile": ("profile", None),
+            "weapon": ("weapon", None),
             "dtCreated": ("dtCreated", None),
             "x": ("x", Agent._onXChanged),
             "y": ("y", Agent._onYChanged),
@@ -501,6 +542,10 @@ class Agent(IAgent):
             "life": ("life", Agent._onLifeChanged),
             "d": ("distance", Agent._onDistanceChanged),
             "range": ("range", Agent._onRangeChanged),
+            "lastChecked": ("lastChecked", None),
+            "checked": ("checked", None),
+            "checkedAt": ("checkedAt", None),
+            "powerUps": ("powerUps", None),
             "fire": ("isFiring", None),
             "led": ("color", None),
             "info": ("infoPlayer", Agent._onPrivateMessageReceived),
@@ -518,6 +563,7 @@ class Agent(IAgent):
             "players": ("players", Agent._onPlayerNumberChanged),
             "robots": ("robots", Agent._onRobotNumberChanged),
             "map": ("map", None),
+            "checkpoints": ("checkpoints", None),
             "info": ("infoArena", Agent._onPublicMessageReceived),
             "gridColumns": ("gridColumns", Agent._onGridColumnsChanged),
             "gridRows": ("gridRows", Agent._onGridRowsChanged),
@@ -562,6 +608,15 @@ class Agent(IAgent):
             return
         self.__firepath = firepath
         self.__playerReqBuf['fire'] = enable
+
+    def changeWeapon(self, weapon: int) -> None:
+        if (type(weapon) is not int):
+            anx.warning("⚠️ change weapon value must be an index !")
+            return
+        self.__playerReqBuf['weapon'] = weapon
+
+    def die(self) -> None:
+        self.__playerReqBuf['die'] = True
 
     def accelerate(self, ax: float, ay: float) -> None:
         if (type(ax) is not float or type(ay) is not float):
@@ -868,14 +923,16 @@ class AgentFr(IAgentFr):
         super().__init__()
         self.__mapEnToFr = {
             "clientId": "idClient", "playerId": "idJoueur", "robotId": "idRobot", "team": "equipe",
-            "profile": "profile",
+            "profile": "profile", "weapon": "arme",
             "dtCreated": "dtCreation", "x": "x", "y": "y", "vx": "vx", "vy": "vy", "dir": "orientation", "pose": "pose",
             "life": "vie", "ammo": "munitions", "distance": "distance",
             "color": "couleur", "infoPlayer": "infoJoueur", "range": "voisins",
+            "lastChecked": "dernierCheck", "checked": "checks", "checkedAt": "tChecks",
             "score": "score", "rank": "classement",
             "nFire": "nTirs", "nHitFire": "nTirsRecus", "nCollision": "nCollisions", "nMove": "nDeplacements",
             "nKill": "nTirs", "nDeath": "nMorts", "nExe": "nExecutions",
-            "game": "jeu", "players": "agents", "robots": "robots", "map": "carte", "infoArena": "chatArena",
+            "game": "jeu", "players": "agents", "robots": "robots", "map": "carte", "checkpoints": "checkpoints",
+            "infoArena": "chatArena",
             "isGamePaused": "jeuEnPause", "gridColumns": "tailleGrilleColonnes", "gridRows": "tailleGrilleLignes"
         }
         self.__agent = Agent(nom, arene, username, password, url, port, fluxImage, autoconnect, proxy, verbosite,
@@ -902,6 +959,12 @@ class AgentFr(IAgentFr):
 
     def tirer(self, gachette: bool = True, trajectoire: Callable[[int], int] or None = None) -> None:
         self.__agent.fire(gachette, trajectoire)
+
+    def changerArme(self, arme: int) -> None:
+        self.__agent.changeWeapon(arme)
+
+    def mourir(self) -> None:
+        self.__agent.die()
 
     def accelerer(self, ax: float, ay: float) -> None:
         self.__agent.accelerate(ax, ay)

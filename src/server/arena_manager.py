@@ -33,6 +33,15 @@ def on_update(source, event, value_before=None, value_after=None):
     print("Rx event ", event, " from ", source, " : ", value_before, " => ", value_after)
 
 
+def get_rules(file: str) -> Dict[str, Any]:
+    """
+    Get the rules from a file.
+    :param file: the file to get the rules from
+    """
+    with open(file, "r", encoding="utf-8") as json_file:
+        return json.load(json_file)
+
+
 class ArenaManager(IManager):
     """
     This class is the manager of the arena. It handles the arena state machine and the arena events.
@@ -60,7 +69,7 @@ class ArenaManager(IManager):
         self.__state_machine = StateMachine(self).define_states(StateMachineConfig())
         super().__init__(agent, self.__state_machine)
         _init_logger()
-        agent.set_context(self)
+        # agent.set_context(self)
         # define variables to retain information about the game
         # self.__map: List[List[int]] = []
         self.__rules = agent.game
@@ -68,11 +77,12 @@ class ArenaManager(IManager):
 
         # define the rules of the arena
         self.display("🔴 Arène en cours de construction ")
-        with open(os.path.join(__current_dir__, "rules.json"), "r", encoding="utf-8") as json_file:
-            rules = json.load(json_file)
-            self.__update_rules(rules)
-            self.__time_limit = int(rules["timeLimit"])
-        self.restart()
+        rules = get_rules(os.path.join(__current_dir__, "rules.json"))
+        self.__update_rules(rules)
+
+        self.__time_limit = int(rules["timeLimit"])
+
+        # self.restart()
         # change manager's State to wait for players
         self.display("En attente des joueurs...")
         self._logger.info("rules after updates", self._robot.game)
@@ -170,8 +180,14 @@ class ArenaManager(IManager):
             return
         self._logger.debug(f"Updating rules to : {rules}")
         for key, value in rules.items():
-            self._robot.ruleArena(key, value)
-        self._robot.update()
+            self._logger.debug(f"Updating rule : {key} => {value}")
+            if key not in self._robot.game or self._robot.game[key] != value:
+                if key == "info":
+                    self._robot.ruleArena(key, value)
+                    self._robot.update(False)
+                    self._logger.debug(f"Rule {key} updated to {rules[key]} !")
+        self.__rules = self._robot.game
+        self._logger.debug(f"Rules updated : {self.__rules}")
 
     def set_pause(self, pause: bool) -> bool:
         """
@@ -368,4 +384,4 @@ if __name__ == '__main__':
     )
     with ArenaManager(agent) as gest:
         gest.game_loop()
-        agent.disconnect()
+        # agent.disconnect()
