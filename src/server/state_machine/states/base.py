@@ -67,9 +67,9 @@ class GameState(State, ABC):
     Base State class.
     """
 
-    def __init__(self, agent: IManager):
+    def __init__(self, manager: IManager):
         super().__init__()
-        self._agent = agent
+        self._manager = manager
         self._logger = logging.getLogger(self.__class__.__name__ + f" : {self.name.name}")
         self._logger.setLevel(root_config.LOGGING_LEVEL)
 

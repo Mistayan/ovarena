@@ -5,6 +5,10 @@ Handles the game operations
 
 from __future__ import annotations
 
+from typing import overload
+
+from typing_extensions import override
+
 from .base import GameState
 from .possible_states import StateEnum
 
@@ -19,8 +23,9 @@ class InGame(GameState):
         - handle game events
     """
 
-    def __init__(self, agent):
-        super().__init__(agent)
+    @override
+    def __init__(self, manager):
+        super().__init__(manager)
         self.__loop_start_time = 0
 
     @property
@@ -34,11 +39,13 @@ class InGame(GameState):
         If the game is over, switch to the EndGame state
         Handle the game operations
         """
-        if self._agent._robot.game["pause"]:
+        if self._manager.get_rules["pause"]:
             self.__unpause()
-        if not self._agent.all_players_connected:
+            self._manager.mod_game("open", True)
+
+        if not self._manager.all_players_connected:
             self.switch_state(StateEnum.WAIT_PLAYERS)
-        if not self._agent.game_loop_running:
+        if not self._manager.game_loop_running and self._manager.all_players_connected:
             self.switch_state(StateEnum.END_GAME)
         self.__update()
 
@@ -46,9 +53,8 @@ class InGame(GameState):
         """
         The game is paused, unpause it
         """
-        self._agent.set_pause(False)
-        self._agent.display("🟢 Reprise de la partie !")
-        # self._agent.update()
+        self._manager.set_pause(False)
+        self._manager.display("🟢 Reprise de la partie !")
 
     def __handle_players_events(self):
         """
@@ -66,9 +72,9 @@ class InGame(GameState):
         """
         Update the game state
         """
-        self.__loop_start_time = self._agent._robot.game["t"]
+        self.__loop_start_time = self._manager._robot.game["t"]
         if self.__loop_start_time % 6000 == 0:
-            self._agent.display(f"🟢 {self.__loop_start_time // 6000} minutes écoulées")
+            self._manager.display(f"🟢 {self.__loop_start_time // 6000} minutes écoulées")
         self.__handle_players_events()
         self.__handle_game_events()
         # self._agent.update()

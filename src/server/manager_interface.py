@@ -5,11 +5,10 @@ This class defines the actions a Manager can do on the game.
 
 from abc import ABC, abstractmethod
 from time import sleep, perf_counter
-from typing import Dict, Any, List
 
-import root_config
 from src.api.j2l.pytactx.agent import Agent
-from .models import Player
+from .arena_agent import SyncAgent
+from src.server.models.player import Player
 
 
 class IManager(ABC):
@@ -21,7 +20,7 @@ class IManager(ABC):
     _robot: Agent
 
     @abstractmethod
-    def __init__(self, agent: Agent):
+    def __init__(self, agent: SyncAgent, state_machine):
         """
         Initialize the manager.
         use super().__init__() to initialize the Agent
@@ -31,8 +30,21 @@ class IManager(ABC):
         if not isinstance(agent, Agent):
             raise TypeError(f"Agent must be a subclass of Agent, got {type(agent)}")
         self._robot = agent
+        self.__state_machine = state_machine
         print("IManager done init")
 
+    @property
+    @abstractmethod
+    def get_rules(self):
+        """
+        Return the rules of the arena.
+        """
+
+    @abstractmethod
+    def mod_game(self, key, value):
+        """
+        Change a rule of the arena and update the game
+        """
     @property
     def last_loop_time(self) -> int:
         """
@@ -50,17 +62,10 @@ class IManager(ABC):
         while self.game_loop_running:
             sleep(1.501)
             loop_start_time = perf_counter()
+            self.__state_machine.handle()
             self._robot.update()
             self.__last_loop_time = (perf_counter() - loop_start_time) * 1000
-
-    ############################
-    # CONNECTIVITY MANAGEMENT  #
-    ############################
-    @abstractmethod
-    def on_update(self, other, event, value) -> None:
-        """
-        Define what must be done on each update.
-        """
+            self._logger.debug(f"iface/Loop time : {self.__last_loop_time:.2f}ms")
 
     ##########################
     # ARENA RULES MANAGEMENT #
@@ -68,30 +73,8 @@ class IManager(ABC):
 
     @property
     @abstractmethod
-    def get_rules(self) -> Dict[str, Any]:
-        """
-        Get the rules applied to the arena.
-        """
-
-    @property
-    @abstractmethod
     def all_players_connected(self) -> bool:
         """ return True if all players are connected """
-
-    @abstractmethod
-    def set_pause(self, pause: bool) -> bool:
-        """
-        un/pause the game
-        this method waits for the game response and return it
-        :param pause: True to pause the game, False to resume
-        :return: the new pause state applied to the game
-        """
-
-    @abstractmethod
-    def set_map(self, _map: List[List[int]]) -> bool:
-        """
-        Set the map of the arena.
-        """
 
     ############################
     # ARENA PLAYERS MANAGEMENT #
@@ -152,8 +135,10 @@ class IManager(ABC):
         """
         return True if the game is running
         """
+        raise NotImplementedError()
 
     def __del__(self):
+        self._robot.disconnect()
         self.__exit__(None, None, None)
         print("Manager deleted")
 

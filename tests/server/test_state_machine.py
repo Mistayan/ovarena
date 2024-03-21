@@ -32,6 +32,7 @@ class TestStateMachine(unittest.TestCase):
         manager = mock.Mock(ArenaManager)
         manager._robot = mock.Mock()
         manager._robot.game = {'t': 0, "pause": True, "timeElapsed": 0, "timeLimit": 50000}
+        manager.get_rules = manager._robot.game
         manager._robot.players = ["player1", "player2"]
         manager.players = manager._robot.players
         # when manager.set_pause is called, set manager.game["pause"] to True/False
@@ -227,6 +228,7 @@ class TestStateMachine(unittest.TestCase):
         sm.handle()
         assert sm.state == StateEnum.IN_GAME.name
         sm.handle()
+        assert sm.state == StateEnum.IN_GAME.name
         assert manager._robot.game["pause"] is False
 
     def test_players_disconnected(self):
@@ -247,6 +249,7 @@ class TestStateMachine(unittest.TestCase):
         # when manager.register_player is called, set manager.players to specified value
         manager.register_player.side_effect = lambda player: manager.registered_players.append(player)
         manager.set_pause.side_effect = lambda pause: manager.game.update({"pause": pause})
+        manager._robot.ruleArena.side_effect = lambda k, v: manager.game.update({k: v})
 
         # when i handle the state machine,
         # it registers the player 1 and wait for more players
@@ -291,7 +294,6 @@ class TestStateMachine(unittest.TestCase):
         manager, sm = self.__init_state_machine()
         sm = StateMachine(manager)
         sm.define_states(StateMachineConfig())
-
         assert sm.state == StateEnum.WAIT_PLAYERS_CONNEXION.name
         sm.handle()
         assert sm.state == StateEnum.WAIT_GAME_START.name
@@ -304,7 +306,7 @@ class TestStateMachine(unittest.TestCase):
         assert sm.state == StateEnum.END_GAME.name
         # then, EndGame state should put the game in pause and display the end game message
         sm.handle()
-        assert manager._robot.game["pause"] is True
+        assert manager.game_loop_running is False
 
     def test_state_machine_config_0(self):
         """

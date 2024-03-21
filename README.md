@@ -60,13 +60,13 @@ Un joueur peut :
 
 
 L'arbitre peut :
-- [ ] définir les règles du jeu
+- [x] définir les règles du jeu
 - [ ] faire apparaître les joueurs à des emplacements défini par lui-même.
 - [ ] changer la map entre chaque partie ?
-- [ ] voir toute la map
+- [x] voir toute la map
 - [ ] ajouter ce que le joueur voit du labyrinthe à sa map personnelle
 - [ ] changer les scores des joueurs pour appliquer les règles
-- [ ] tuer un joueur
+- [x] tuer un joueur
 - [ ] faire gagner des points et avantages à des joueurs pour leurs découvertes dans le labyrinthe
 - [ ] infliger des pénalités aux joueurs, si ils tapent un mur ou se déplacent sur une case 'lente'
 
