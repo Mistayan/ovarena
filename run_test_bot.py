@@ -12,18 +12,21 @@ if __name__ == '__main__':
         os.getenv("ARENA"),
         os.getenv("LOGIN"),
         os.getenv("PASSWORD"),
-        server="mqtt.jusdeliens.com",
-        port=1883,
+        os.getenv("SERVER"),
+        int(os.getenv("PORT"))
     )
+
     while agent.isConnectedToArena() is False:
         time.sleep(1)
         agent.connect()
     print("Connected to arena, waiting for game to start")
+
     while agent.isGamePaused:
         time.sleep(1)
         agent.lookAt((agent.dir + 1) % 4)
         agent.update()
     print("Game started, waiting for game to end")
+
     while not agent.isGamePaused:
         time.sleep(1)
     print("Game ended, disconnecting from arena")
