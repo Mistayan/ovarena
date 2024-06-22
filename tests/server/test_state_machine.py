@@ -8,7 +8,7 @@ from unittest import mock
 
 import pytest
 
-from src.server import StateMachine
+from src.server.state_machine import StateMachine
 from src.server.arena_manager import ArenaManager
 from src.server.state_machine import StateMachineConfig
 from src.server.state_machine.states import StateEnum, WaitGameStart, WaitPlayersConnexion
