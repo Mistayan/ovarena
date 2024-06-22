@@ -14,35 +14,55 @@ Des interfaces permettent aux apprenants les moins avancés d'avoir des briques 
 
 Pour les sessions les plus longues, nous n'offirons pas ces possibilités aux aprenants.
 
-# minova
-Description courte du projet
-...
+# Minova
+Vous vous réveilez dans ce qui semble être un un endroit sombre et exigu.
+Quand vous regardez autours de vous en vous réveillant, vous remarquez des murs humides. Cela ressemble à un labyrinthe, mais comment suis-je arrivé là ?!
+Dans un moment de panique, vous marchez sur une plaque métallique. Le bruit vous fait pousser un cri.
+Vous écoutez avec attention : Une bête réponds par un grognement qui vous semble sourd et lointain...
+Après quelques secondes de silence, vous remarquez que votre Batterie est bientôt épuisée
 
+Trouvez moyen de survivre, en évitant les pièges qui jonchent cet endroit désolé. Mais surtout, il faut absolument éviter ce monstre, qui sait ce qui pourrait arriver si nous croisons son chemin !
+ 
+
+____
 ## Règles du jeu 
-- [ ] Maximum 5 robot dans l'arène réelle
-- [ ] Maximum 1 robots par 10x5 sur une arène virtuelle
-- [ ] Quand un joueur entre en colision avec un mur, le joueur perd 0,5 points
-- [ ] Quand un joueur avance sur une case autre que du sol (#floor), le joueur perd 0,2 point
-- [ ] Toutes les 1 secondes sur une case autre que le sol, le joueur perd 0,1 point
-- [ ] Si un joueur avance depuis plus de 3 secondes sans incidents, gagne 0,1 point par seconde.
-- [ ] Si un joueur trouve la **__Batterie__**, il gagne **30 points**.
-- [ ] Un match dure __3 minutes 20 secondes__.
+-  Maximum 5 robot dans l'arène réelle
+-  Maximum 1 robots par 10x5 sur une arène virtuelle
+-  Quand un joueur entre en colision avec un mur, le joueur perd 0,5 points
+-  Quand un joueur avance sur une case autre que du sol (#floor), le joueur perd 0,2 point
+-  Toutes les 1 secondes sur une case autre que le sol, le joueur perd 0,1 point
+-  Si un joueur avance depuis plus de 3 secondes sans incidents, gagne 0,1 point par seconde.
+-  Si un joueur trouve la **__Batterie__**, il gagne **30 points**.
+-  Un match dure __3 minutes 20 secondes__.
 
 ##### Maquette
 
+Fonctionement de l'application : 
+![image](https://github.com/Mistayan/ovarena/assets/103120231/e4203419-a4df-4d48-907c-4771b3a12bf7)
 
+____
+Diagrammes de classes:
+
+- Du gestionnaire de jeu :
+	![image](https://github.com/Mistayan/ovarena/assets/103120231/2eef30e6-f3d2-4129-aa2e-6b09b9df8cd9)
+
+- Des états de jeu : 
+	![image](https://github.com/Mistayan/ovarena/assets/103120231/438575d5-3abc-45e9-a4d3-be88f19fa1ce)
+
+____
 ##### Déroulé d'une partie:
 	- Les joueurs arrivent à un emplacement aléatoire, défini sur les bords de la grille.
 	- Chaque joueur possède un temps de préparation, afin d'apprendre à son robot à naviguer dans un labyrinthe sombre, exigüe, et rempli de de mésaventures
     - Lors de la 'compétition', chaque joueur aura TROIS essais pour trouver la **__Batterie__** et accumuler le maximum de points
     - L'objectif de chacun est d'entrainer un algorithme capable de se souvenir des chemins déjà empruntés par son robot, et de déterminer si un chemin est plus rapide à prendre qu'un autre pour trouver la batterie avant tout le monde, et accumuler un maximum de points.
 
-
+____
 ## conditions de victoire :
    Le maximum de points théorique est de : 89.1
    Sur 3 matchs distincts (total 10 minutes de compétition), l'objectif est d'accumuler un maximum de points 
 Il est possible d'être éliminé (les points ne sont pas perdus), si un joueur est touché 3 fois par Minova
 
+____
 ## Use cases
 
 Un joueur peut :
@@ -62,7 +82,7 @@ Un joueur peut :
 L'arbitre peut :
 - [x] définir les règles du jeu
 - [ ] faire apparaître les joueurs à des emplacements défini par lui-même.
-- [ ] changer la map entre chaque partie ?
+- [ ] changer la map entre chaque partie
 - [x] voir toute la map
 - [ ] ajouter ce que le joueur voit du labyrinthe à sa map personnelle
 - [ ] changer les scores des joueurs pour appliquer les règles
@@ -71,7 +91,7 @@ L'arbitre peut :
 - [ ] infliger des pénalités aux joueurs, si ils tapent un mur ou se déplacent sur une case 'lente'
 
 
-
+____
 ## Pré-requis
 - pour utiliser le projet:
 Python >= 3.10
@@ -86,7 +106,7 @@ ARENA_NAME=nom_de_larene_ou_tu_souhaite_te_connecter
 ARENA_PLAYER_PASS=aPassword_sinon_ca_ne_fonctionnera_pas
 ```
 
-
+____
 ##  Installation 
 Step by step : commandes à executer, paquets à installer ...
 
@@ -116,6 +136,7 @@ python -m venv venv
 ```shell
 ./venv/lib/python ./src/api/ova-demo.py
 ```
+____
 
 ##  Auteur(s)
 Rendre à César ce qui appartient à César !
